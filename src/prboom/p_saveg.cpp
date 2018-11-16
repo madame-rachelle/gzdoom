@@ -1,3 +1,4 @@
+#if 0
 /* Emacs style mode select   -*- C++ -*-
  *-----------------------------------------------------------------------------
  *
@@ -40,8 +41,8 @@
 #include "m_random.h"
 #include "am_map.h"
 #include "p_enemy.h"
-#include "lprintf.h"
-#include "s_advsound.h"
+//#include "lprintf.h"
+//#include "s_advsound.h"
 #include "e6y.h"//e6y
 
 namespace prboom
@@ -51,7 +52,7 @@ byte *save_p;
 
 // Pads save_p to a 4-byte boundary
 //  so that the load/save works on SGI&Gecko.
-#define PADSAVEP()    do { save_p += (4 - ((int) save_p & 3)) & 3; } while (0)
+#define PADSAVEP()    do { save_p += (4 - ((ptrdiff_t) save_p & 3)) & 3; } while (0)
 //
 // P_ArchivePlayers
 //
@@ -1032,3 +1033,4 @@ void P_UnArchiveMap(void)
 
 }
 
+#endif

@@ -33,8 +33,10 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
+#include "doomdata.h"
 #include "r_defs.h"
 #include "d_player.h"
+#include "p_mobj.h"
 
 namespace prboom
 {
@@ -729,6 +731,15 @@ typedef struct
 
 // killough 3/7/98: Add generalized scroll effects
 
+enum SCEnum
+{
+	sc_side,
+	sc_floor,
+	sc_ceiling,
+	sc_carry,
+	sc_carry_ceiling,  // killough 4/11/98: carry objects hanging on ceilings
+};
+
 typedef struct {
   thinker_t thinker;   // Thinker structure for scrolling
   fixed_t dx, dy;      // (dx,dy) scroll speeds
@@ -737,14 +748,7 @@ typedef struct {
   fixed_t last_height; // Last known height of control sector
   fixed_t vdx, vdy;    // Accumulated velocity if accelerative
   int accel;           // Whether it's accelerative
-  enum
-  {
-    sc_side,
-    sc_floor,
-    sc_ceiling,
-    sc_carry,
-    sc_carry_ceiling,  // killough 4/11/98: carry objects hanging on ceilings
-  } type;              // Type of scroll effect
+  SCEnum type;              // Type of scroll effect
 } scroll_t;
 
 // phares 3/12/98: added new model of friction for ice/sludge effects
@@ -758,15 +762,17 @@ typedef struct {
 
 // phares 3/20/98: added new model of Pushers for push/pull effects
 
+enum PEnum
+{
+	p_push,
+	p_pull,
+	p_wind,
+	p_current,
+};
+
 typedef struct {
   thinker_t thinker;   // Thinker structure for Pusher
-  enum
-  {
-    p_push,
-    p_pull,
-    p_wind,
-    p_current,
-  } type;
+  PEnum type;
   mobj_t* source;      // Point source if point pusher
   int x_mag;           // X Strength
   int y_mag;           // Y Strength

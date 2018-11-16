@@ -38,7 +38,7 @@
 #include "g_game.h"
 #include "s_sound.h"
 #include "sounds.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "e6y.h"//e6y
 
 namespace prboom
@@ -85,7 +85,7 @@ void P_InitSwitchList(void)
   for (i=0;;i++)
   {
     if (index+1 >= max_numswitches)
-      switchlist = realloc(switchlist, sizeof *switchlist *
+      switchlist = (int*)realloc(switchlist, sizeof *switchlist *
           (max_numswitches = max_numswitches ? max_numswitches*2 : 8));
     if (LittleShort(alphSwitchList[i].episode) <= episode) //jff 5/11/98 endianess
     {
@@ -200,7 +200,7 @@ void P_ChangeSwitchTexture
     line->special = 0;
 
   /* search for a texture to change */
-  texture = NULL; position = 0;
+  texture = NULL; position = (bwhere_e)0;
   for (i = 0;i < numswitches*2;i++) { /* this could be more efficient... */
     if (switchlist[i] == *ttop) {
       texture = ttop; position = top; break;

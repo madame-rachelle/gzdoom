@@ -41,7 +41,7 @@
 #include "p_maputl.h"
 #include "p_map.h"
 #include "p_setup.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "g_game.h"
 #include "g_overflow.h"
 #include "e6y.h"//e6y
@@ -430,7 +430,7 @@ void check_intercept(void)
   if (offset >= num_intercepts)
     {
       num_intercepts = num_intercepts ? num_intercepts*2 : 128;
-      intercepts = realloc(intercepts, sizeof(*intercepts)*num_intercepts);
+      intercepts = (intercept_t*)realloc(intercepts, sizeof(*intercepts)*num_intercepts);
       intercept_p = intercepts + offset;
     }
 }

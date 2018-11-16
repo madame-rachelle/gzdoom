@@ -1,3 +1,4 @@
+#if 0
 /* Emacs style mode select   -*- C++ -*-
  *-----------------------------------------------------------------------------
  *
@@ -40,7 +41,7 @@
 #include "g_game.h"
 #include "w_wad.h"
 #include "r_main.h"
-#include "r_things.h"
+//#include "r_things.h"
 #include "p_maputl.h"
 #include "p_map.h"
 #include "p_setup.h"
@@ -48,11 +49,11 @@
 #include "p_tick.h"
 #include "p_enemy.h"
 #include "s_sound.h"
-#include "s_advsound.h"
-#include "lprintf.h" //jff 10/6/98 for debug outputs
-#include "v_video.h"
+//#include "s_advsound.h"
+//#include "lprintf.h" //jff 10/6/98 for debug outputs
+//#include "v_video.h"
 #include "r_demo.h"
-#include "r_fps.h"
+//#include "r_fps.h"
 #include "hu_tracers.h"
 #include "g_overflow.h"
 #include "am_map.h"
@@ -2761,3 +2762,4 @@ void P_Init (void)
 
 }
 
+#endif

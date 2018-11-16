@@ -46,18 +46,12 @@
 // Include system definitions so that prototypes become
 // active before macro replacements below are in effect.
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include <cstdlib>
-
-inline void Z_Free(void *p) { std::free(p); }
-inline void Z_Calloc(int size) { void *p = malloc(size); memset(p, 0, size); return p; }
 
 namespace prboom
 {
@@ -109,7 +103,9 @@ void Z_DumpHistory(char *);
  * directly, for efficiency. Except we do need a wrapper to handle out of memory
  * errors... damn, ok, we'll leave it for now.
  */
-#ifndef HAVE_LIBDMALLOC
+#if 1
+
+#elif !defined(HAVE_LIBDMALLOC)
 // Remove all definitions before including system definitions
 
 #undef malloc

@@ -782,6 +782,7 @@ set( POLYRENDER_SOURCES
 )
 
 set ( PRBOOM_SOURCES
+	prboom/prboom.cpp
 	prboom/g_game.cpp
 	prboom/g_overflow.cpp
 	prboom/p_ceilng.cpp
@@ -808,6 +809,8 @@ set ( PRBOOM_SOURCES
 	prboom/md5.cpp
 	prboom/doomdef.cpp
 	prboom/z_zone.cpp
+	prboom/d_deh.cpp
+	prboom/dstrings.cpp
 )
 
 # These files will be flagged as "headers" so that they appear in project files

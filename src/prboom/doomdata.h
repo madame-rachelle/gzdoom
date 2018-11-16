@@ -33,6 +33,10 @@
  *
  *-----------------------------------------------------------------------------*/
 
+//#include "config.h"
+//#include "../doomdata.h"
+#if 1
+
 #ifndef __DOOMDATA__
 #define __DOOMDATA__
 
@@ -255,3 +259,5 @@ typedef struct {
 }
 
 #endif // __DOOMDATA__
+
+#endif

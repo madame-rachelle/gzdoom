@@ -43,17 +43,18 @@
 #include "hu_stuff.h"
 #include "hu_tracers.h"
 #include "s_sound.h"
-#include "s_advsound.h"
+//#include "s_advsound.h"
 #include "info.h"
 #include "g_game.h"
 #include "p_inter.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "r_demo.h"
 #include "g_overflow.h"
 #include "e6y.h"//e6y
 
 namespace prboom
 {
+void MusInfoThinker(mobj_t *thing);
 
 //
 // P_SetMobjState
@@ -96,9 +97,9 @@ dboolean P_SetMobjState(mobj_t* mobj,statenum_t state)
     // Call action functions when the state is set
 
     if (st->action)
-      st->action(mobj);
+      ((actionf_p1)st->action)(mobj);
 
-    seenstate[state] = 1 + st->nextstate;   // killough 4/9/98
+    seenstate[state] = (statenum_t)(1 + st->nextstate);   // killough 4/9/98
 
     state = st->nextstate;
     } while (!mobj->tics && !seenstate[state]);   // killough 4/9/98
@@ -107,8 +108,8 @@ dboolean P_SetMobjState(mobj_t* mobj,statenum_t state)
     doom_printf("Warning: State Cycle Detected");
 
   if (!--recursion)
-    for (;(state=seenstate[i]);i=state-1)
-      seenstate[i] = 0;  // killough 4/9/98: erase memory of states
+    for (;(state= (statenum_t)seenstate[i]);i= (statenum_t)(state-1))
+      seenstate[i] = (statenum_t)0;  // killough 4/9/98: erase memory of states
 
   return ret;
 }
@@ -122,7 +123,7 @@ void P_ExplodeMissile (mobj_t* mo)
 {
   mo->momx = mo->momy = mo->momz = 0;
 
-  P_SetMobjState (mo, mobjinfo[mo->type].deathstate);
+  P_SetMobjState (mo, (statenum_t)mobjinfo[mo->type].deathstate);
 
   mo->tics -= P_Random(pr_explode)&3;
 
@@ -168,7 +169,7 @@ static void P_XYMovement (mobj_t* mo)
       mo->flags &= ~MF_SKULLFLY;
       mo->momz = 0;
 
-      P_SetMobjState (mo, mo->info->spawnstate);
+      P_SetMobjState (mo, (statenum_t)mo->info->spawnstate);
       }
     return;
     }
@@ -792,14 +793,14 @@ void P_MobjThinker (mobj_t* mobj)
   if (mobj->momx | mobj->momy || mobj->flags & MF_SKULLFLY)
     {
       P_XYMovement(mobj);
-      if (mobj->thinker.function != P_MobjThinker) // cph - Must've been removed
+      if (mobj->thinker.function != (think_t)P_MobjThinker) // cph - Must've been removed
   return;       // killough - mobj was removed
     }
 
   if (mobj->z != mobj->floorz || mobj->momz)
     {
       P_ZMovement(mobj);
-      if (mobj->thinker.function != P_MobjThinker) // cph - Must've been removed
+      if (mobj->thinker.function != (think_t)P_MobjThinker) // cph - Must've been removed
   return;       // killough - mobj was removed
     }
   else
@@ -890,7 +891,7 @@ mobj_t* P_SpawnMobj(fixed_t x,fixed_t y,fixed_t z,mobjtype_t type)
   state_t*    st;
   mobjinfo_t* info;
 
-  mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
+  mobj = (mobj_t*)Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
   memset (mobj, 0, sizeof (*mobj));
   info = &mobjinfo[type];
   mobj->type = type;
@@ -941,7 +942,7 @@ mobj_t* P_SpawnMobj(fixed_t x,fixed_t y,fixed_t z,mobjtype_t type)
   mobj->PrevY = mobj->y;
   mobj->PrevZ = mobj->z;
 
-  mobj->thinker.function = P_MobjThinker;
+  mobj->thinker.function = (think_t)P_MobjThinker;
 
   //e6y
   mobj->friction    = ORIG_FRICTION;                        // phares 3/17/98
@@ -1030,12 +1031,12 @@ void P_RemoveMobj (mobj_t* mobj)
 
 static PUREFUNC int P_FindDoomedNum(unsigned type)
 {
-  static struct { int first, next; } *hash;
+  static struct HASHSTRUCT { int first, next; } *hash;
   register int i;
 
   if (!hash)
     {
-      hash = Z_Malloc(sizeof *hash * NUMMOBJTYPES, PU_CACHE, (void **) &hash);
+      hash = (HASHSTRUCT*)Z_Malloc(sizeof *hash * NUMMOBJTYPES, PU_CACHE, (void **) &hash);
       for (i=0; i<NUMMOBJTYPES; i++)
   hash[i].first = NUMMOBJTYPES;
       for (i=0; i<NUMMOBJTYPES; i++)
@@ -1105,7 +1106,7 @@ void P_RespawnSpecials (void)
   else
     z = ONFLOORZ;
 
-  mo = P_SpawnMobj (x,y,z, i);
+  mo = P_SpawnMobj (x,y,z, (mobjtype_t)i);
   mo->spawnpoint = *mthing;
   mo->angle = ANG45 * (mthing->angle/45);
 
@@ -1299,7 +1300,7 @@ mobj_t* P_SpawnMapThing (const mapthing_t* mthing, int index)
       {
       num_deathmatchstarts = num_deathmatchstarts ?
                  num_deathmatchstarts*2 : 16;
-      deathmatchstarts = realloc(deathmatchstarts,
+      deathmatchstarts = (mapthing_t*)realloc(deathmatchstarts,
                    num_deathmatchstarts *
                    sizeof(*deathmatchstarts));
       deathmatch_p = deathmatchstarts + offset;
@@ -1429,7 +1430,7 @@ spawnit:
   else
     z = ONFLOORZ;
 
-  mobj = P_SpawnMobj (x,y,z, i);
+  mobj = P_SpawnMobj (x,y,z, (mobjtype_t)i);
   mobj->spawnpoint = *mthing;
   mobj->index = index;//e6y
   mobj->iden_nums = iden_num;

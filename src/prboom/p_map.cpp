@@ -44,7 +44,7 @@
 #include "p_inter.h"
 #include "m_random.h"
 #include "m_bbox.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "m_argv.h"
 #include "g_game.h"
 #include "g_overflow.h"
@@ -489,7 +489,7 @@ dboolean PIT_CheckLine (line_t* ld)
       // 1/11/98 killough: remove limit on lines hit, by array doubling
       if (numspechit >= spechit_max) {
         spechit_max = spechit_max ? spechit_max*2 : 8;
-	spechit = realloc(spechit,sizeof *spechit*spechit_max); // killough
+	spechit = (line_t**)realloc(spechit,sizeof *spechit*spechit_max); // killough
       }
       spechit[numspechit++] = ld;
       // e6y: Spechits overrun emulation code
@@ -584,7 +584,7 @@ static dboolean PIT_CheckThing(mobj_t *thing) // killough 3/26/98: make static
       tmthing->flags &= ~MF_SKULLFLY;
       tmthing->momx = tmthing->momy = tmthing->momz = 0;
 
-      P_SetMobjState (tmthing, tmthing->info->spawnstate);
+      P_SetMobjState (tmthing, (statenum_t)tmthing->info->spawnstate);
 
       return false;   // stop moving
     }
@@ -2098,7 +2098,10 @@ dboolean P_CheckSector(sector_t* sector,dboolean crunch)
 // CPhipps -
 // Use block memory allocator here
 
+}
 #include "z_bmalloc.h"
+namespace prboom
+{
 
 IMPLEMENT_BLOCK_MEMORY_ALLOC_ZONE(secnodezone, sizeof(msecnode_t), PU_LEVEL, 256, "SecNodes");
 

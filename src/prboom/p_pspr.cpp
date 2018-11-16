@@ -45,7 +45,7 @@
 #include "d_event.h"
 #include "r_demo.h"
 #include "g_game.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "e6y.h"//e6y
 
 #define LOWERSPEED   (FRACUNIT*6)
@@ -120,7 +120,7 @@ static void P_SetPsprite(player_t *player, int position, statenum_t stnum)
       // Modified handling.
       if (state->action)
         {
-          state->action(player, psp);
+          ((actionf_p2)state->action)(player, psp);
           if (!psp->state)
             break;
         }
@@ -149,7 +149,7 @@ static void P_BringUpWeapon(player_t *player)
   if (player->pendingweapon >= NUMWEAPONS)
     lprintf(LO_WARN, "P_BringUpWeapon: weaponinfo overrun has occured.\n");
 
-  newstate = weaponinfo[player->pendingweapon].upstate;
+  newstate = (statenum_t)weaponinfo[player->pendingweapon].upstate;
 
   player->pendingweapon = wp_nochange;
   // killough 12/98: prevent pistol from starting visibly at bottom of screen:
@@ -284,9 +284,9 @@ dboolean P_CheckAmmo(player_t *player)
 
   if (demo_compatibility)
     {
-      player->pendingweapon = P_SwitchWeapon(player);      // phares
+      player->pendingweapon = (weapontype_t)P_SwitchWeapon(player);      // phares
       // Now set appropriate weapon overlay.
-      P_SetPsprite(player,ps_weapon,weaponinfo[player->readyweapon].downstate);
+      P_SetPsprite(player,ps_weapon,(statenum_t)weaponinfo[player->readyweapon].downstate);
     }
 
   return false;
@@ -304,7 +304,7 @@ static void P_FireWeapon(player_t *player)
     return;
 
   P_SetMobjState(player->mo, S_PLAY_ATK1);
-  newstate = weaponinfo[player->readyweapon].atkstate;
+  newstate = (statenum_t)weaponinfo[player->readyweapon].atkstate;
   P_SetPsprite(player, ps_weapon, newstate);
   P_NoiseAlert(player->mo, player->mo);
 }
@@ -316,7 +316,7 @@ static void P_FireWeapon(player_t *player)
 
 void P_DropWeapon(player_t *player)
 {
-  P_SetPsprite(player, ps_weapon, weaponinfo[player->readyweapon].downstate);
+  P_SetPsprite(player, ps_weapon, (statenum_t)weaponinfo[player->readyweapon].downstate);
 }
 
 //
@@ -345,7 +345,7 @@ void A_WeaponReady(player_t *player, pspdef_t *psp)
   if (player->pendingweapon != wp_nochange || !player->health)
     {
       // change weapon (pending weapon should already be validated)
-      statenum_t newstate = weaponinfo[player->readyweapon].downstate;
+      statenum_t newstate = (statenum_t)weaponinfo[player->readyweapon].downstate;
       P_SetPsprite(player, ps_weapon, newstate);
       return;
     }
@@ -411,7 +411,7 @@ void A_CheckReload(player_t *player, pspdef_t *psp)
      * rewritten. But we must tell Doom that we don't need to complete the
      * reload frames for the weapon here. G_BuildTiccmd will set ->pendingweapon
      * for us later on. */
-    P_SetPsprite(player,ps_weapon,weaponinfo[player->readyweapon].downstate);
+    P_SetPsprite(player,ps_weapon, (statenum_t)weaponinfo[player->readyweapon].downstate);
   }
 }
 
@@ -475,7 +475,7 @@ void A_Raise(player_t *player, pspdef_t *psp)
   // The weapon has been raised all the way,
   //  so change to the ready state.
 
-  newstate = weaponinfo[player->readyweapon].readystate;
+  newstate = (statenum_t)weaponinfo[player->readyweapon].readystate;
 
   P_SetPsprite(player, ps_weapon, newstate);
 }
@@ -491,7 +491,7 @@ void A_Raise(player_t *player, pspdef_t *psp)
 static void A_FireSomething(player_t* player,int adder)
 {
   P_SetPsprite(player, ps_flash,
-               weaponinfo[player->readyweapon].flashstate+adder);
+               (statenum_t)(weaponinfo[player->readyweapon].flashstate+adder));
 
   // killough 3/27/98: prevent recoil in no-clipping mode
   if (!(player->mo->flags & MF_NOCLIP))
@@ -694,7 +694,7 @@ void A_FireOldBFG(player_t *player, pspdef_t *psp)
       an2 += tantoangle[slope >> DBITS];
     }
 
-    th = P_SpawnMobj(mo->x, mo->y, mo->z + 62*FRACUNIT - player->psprites[ps_weapon].sy, type);
+    th = P_SpawnMobj(mo->x, mo->y, mo->z + 62*FRACUNIT - player->psprites[ps_weapon].sy, (mobjtype_t)type);
     P_SetTarget(&th->target, mo);
     th->angle = an1;
     th->momx = finecosine[an1>>ANGLETOFINESHIFT] * 25;

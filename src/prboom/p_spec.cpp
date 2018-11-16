@@ -44,7 +44,7 @@
 #include "p_tick.h"
 #include "p_setup.h"
 #include "m_random.h"
-#include "d_englsh.h"
+//#include "d_englsh.h"
 #include "m_argv.h"
 #include "w_wad.h"
 #include "r_main.h"
@@ -54,16 +54,37 @@
 #include "p_inter.h"
 #include "s_sound.h"
 #include "sounds.h"
-#include "i_sound.h"
+//#include "i_sound.h"
 #include "m_bbox.h"                                         // phares 3/20/98
 #include "d_deh.h"
-#include "r_plane.h"
+//#include "r_plane.h"
 #include "hu_stuff.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "e6y.h"//e6y
 
 namespace prboom
 {
+typedef enum
+{
+  CR_BRICK,   //0
+  CR_TAN,     //1
+  CR_GRAY,    //2
+  CR_GREEN,   //3
+  CR_BROWN,   //4
+  CR_GOLD,    //5
+  CR_RED,     //6
+  CR_BLUE,    //7
+  CR_ORANGE,  //8
+  CR_YELLOW,  //9
+  CR_BLUE2,   //10 // proff
+  CR_LIMIT    //11 //jff 2/27/98 added for range check
+} crange_idx_e;
+
+/* killough 10/98: special mask indicates sky flat comes from sidedef */
+#define PL_SKYFLAT (0x80000000)
+
+int I_GetSfxLumpNum(sfxinfo_t *sfx);
+
 
 //
 //      source animation definition
@@ -174,7 +195,7 @@ void P_InitPicAnims (void)
     if (lastanim >= anims + maxanims)
     {
       size_t newmax = maxanims ? maxanims*2 : MAXANIMS;
-      anims = realloc(anims, newmax*sizeof(*anims));   // killough
+      anims = (anim_t*)realloc(anims, newmax*sizeof(*anims));   // killough
       lastanim = anims + maxanims;
       maxanims = newmax;
     }
@@ -410,7 +431,7 @@ fixed_t P_FindNextHighestFloor(sector_t *sec, int currentheight)
       {
         heightlist_size = heightlist_size ? heightlist_size * 2 : 128;
       } while (sec->linecount > heightlist_size);
-      heightlist = realloc(heightlist, heightlist_size * sizeof(heightlist[0]));
+      heightlist = (fixed_t*)realloc(heightlist, heightlist_size * sizeof(heightlist[0]));
     }
     
     for (i=0, h=0 ;i < sec->linecount ; i++)
@@ -2851,9 +2872,9 @@ void T_Scroll(scroll_t *s)
 static void Add_Scroller(int type, fixed_t dx, fixed_t dy,
                          int control, int affectee, int accel)
 {
-  scroll_t *s = Z_Malloc(sizeof *s, PU_LEVSPEC, 0);
-  s->thinker.function = T_Scroll;
-  s->type = type;
+  scroll_t *s = (scroll_t*)Z_Malloc(sizeof *s, PU_LEVSPEC, 0);
+  s->thinker.function = (think_t)T_Scroll;
+  s->type = (SCEnum)type;
   s->dx = dx;
   s->dy = dy;
   s->accel = accel;
@@ -3004,9 +3025,9 @@ static void P_SpawnScrollers(void)
 
 static void Add_Friction(int friction, int movefactor, int affectee)
 {
-    friction_t *f = Z_Malloc(sizeof *f, PU_LEVSPEC, 0);
+    friction_t *f = (friction_t*)Z_Malloc(sizeof *f, PU_LEVSPEC, 0);
 
-    f->thinker.function/*.acp1*/ = /*(actionf_p1) */T_Friction;
+    f->thinker.function/*.acp1*/ = /*(actionf_p1) */(think_t)T_Friction;
     f->friction = friction;
     f->movefactor = movefactor;
     f->affectee = affectee;
@@ -3236,11 +3257,11 @@ static void P_SpawnFriction(void)
 
 static void Add_Pusher(int type, int x_mag, int y_mag, mobj_t* source, int affectee)
 {
-    pusher_t *p = Z_Malloc(sizeof *p, PU_LEVSPEC, 0);
+    pusher_t *p = (pusher_t*)Z_Malloc(sizeof *p, PU_LEVSPEC, 0);
 
-    p->thinker.function = T_Pusher;
+    p->thinker.function = (think_t)T_Pusher;
     p->source = source;
-    p->type = type;
+    p->type = (PEnum)type;
     p->x_mag = x_mag>>FRACBITS;
     p->y_mag = y_mag>>FRACBITS;
     p->magnitude = P_AproxDistance(p->x_mag,p->y_mag);

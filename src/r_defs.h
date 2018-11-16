@@ -1114,6 +1114,9 @@ public:
 	int				healthceilinggroup;
 	int				health3dgroup;
 
+	int flags; // PrBoom playsim
+	int floorheight; // PrBoom playsim
+	int ceilingheight; // PrBoom playsim
 };
 
 struct ReverbContainer;
@@ -1370,6 +1373,8 @@ struct line_t
 	AutomapLineStyle automapstyle;
 	int			health;		// [ZZ] for destructible geometry (0 = no special behavior)
 	int			healthgroup; // [ZZ] this is the "destructible object" id
+
+	int iLineID; // for PrBoom playsim
 
 	DVector2 Delta() const
 	{

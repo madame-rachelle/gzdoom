@@ -37,9 +37,9 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "r_main.h"
-#include "dstrings.h"
+//#include "dstrings.h"
 #include "d_deh.h"  // Ty 03/27/98 - externalized
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "e6y.h"//e6y
 
 namespace prboom
@@ -378,12 +378,12 @@ manual_door://e6y
 
     // new door thinker
     rtn = 1;
-    door = Z_Malloc (sizeof(*door), PU_LEVSPEC, 0);
+    door = (vldoor_t*)Z_Malloc (sizeof(*door), PU_LEVSPEC, 0);
     memset(door, 0, sizeof(*door));
     P_AddThinker (&door->thinker);
     sec->ceilingdata = door; //jff 2/22/98
 
-    door->thinker.function = T_VerticalDoor;
+    door->thinker.function = (think_t)T_VerticalDoor;
     door->sector = sec;
     door->type = type;
     door->topwait = VDOORWAIT;
@@ -524,10 +524,10 @@ int EV_VerticalDoor
    * Secondly, original Doom didn't distinguish floor/lighting/ceiling
    *  actions, so we need to do the same in demo compatibility mode.
    */
-  door = sec->ceilingdata;
+  door = (vldoor_t*)sec->ceilingdata;
   if (demo_compatibility) {
-    if (!door) door = sec->floordata;
-    if (!door) door = sec->lightingdata;
+    if (!door) door = (vldoor_t*)sec->floordata;
+    if (!door) door = (vldoor_t*)sec->lightingdata;
   }
   /* If this is a repeatable line, and the door is already moving, then we can just reverse the current action. Note that in prboom 2.3.0 I erroneously removed the if-this-is-repeatable check, hence the prboom_4_compatibility clause below (foolishly assumed that already moving implies repeatable - but it could be moving due to another switch, e.g. lv19-509) */
   if (door &&
@@ -539,7 +539,7 @@ int EV_VerticalDoor
      * mess up non-T_VerticalDoor actions.
      */
     if (compatibility_level < prboom_4_compatibility || 
-        door->thinker.function == T_VerticalDoor) {
+        door->thinker.function == (think_t)T_VerticalDoor) {
       /* cph - we are writing outval to door->direction iff it is non-zero */
       signed int outval = 0;
 
@@ -547,7 +547,7 @@ int EV_VerticalDoor
        * monster is trying to open a closing door - so change direction
        * DEMOSYNC: we only read door->direction now if it really is a door.
        */
-      if (door->thinker.function == T_VerticalDoor && door->direction == -1) {
+      if (door->thinker.function == (think_t)T_VerticalDoor && door->direction == -1) {
         outval = 1; /* go back up */
       } else if (player) {
         outval = -1; /* go back down */
@@ -559,9 +559,9 @@ int EV_VerticalDoor
        *  being corrupted by this.
        */
       if (outval) {
-        if (door->thinker.function == T_VerticalDoor) {
+        if (door->thinker.function == (think_t)T_VerticalDoor) {
           door->direction = outval;
-        } else if (door->thinker.function == T_PlatRaise) {
+        } else if (door->thinker.function == (think_t)T_PlatRaise) {
           plat_t* p = (plat_t*)door;
           p->wait = outval;
         } else {
@@ -591,11 +591,11 @@ int EV_VerticalDoor
   }
 
   // new door thinker
-  door = Z_Malloc (sizeof(*door), PU_LEVSPEC, 0);
+  door = (vldoor_t*)Z_Malloc (sizeof(*door), PU_LEVSPEC, 0);
   memset(door, 0, sizeof(*door));
   P_AddThinker (&door->thinker);
   sec->ceilingdata = door; //jff 2/22/98
-  door->thinker.function = T_VerticalDoor;
+  door->thinker.function = (think_t)T_VerticalDoor;
   door->sector = sec;
   door->direction = 1;
   door->speed = VDOORSPEED;
@@ -663,7 +663,7 @@ void P_SpawnDoorCloseIn30 (sector_t* sec)
 {
   vldoor_t* door;
 
-  door = Z_Malloc ( sizeof(*door), PU_LEVSPEC, 0);
+  door = (vldoor_t*)Z_Malloc ( sizeof(*door), PU_LEVSPEC, 0);
 
   memset(door, 0, sizeof(*door));
   P_AddThinker (&door->thinker);
@@ -671,7 +671,7 @@ void P_SpawnDoorCloseIn30 (sector_t* sec)
   sec->ceilingdata = door; //jff 2/22/98
   sec->special = 0;
 
-  door->thinker.function = T_VerticalDoor;
+  door->thinker.function = (think_t)T_VerticalDoor;
   door->sector = sec;
   door->direction = 0;
   door->type = normal;
@@ -695,7 +695,7 @@ void P_SpawnDoorRaiseIn5Mins
 {
   vldoor_t* door;
 
-  door = Z_Malloc ( sizeof(*door), PU_LEVSPEC, 0);
+  door = (vldoor_t*)Z_Malloc ( sizeof(*door), PU_LEVSPEC, 0);
 
   memset(door, 0, sizeof(*door));
   P_AddThinker (&door->thinker);
@@ -703,7 +703,7 @@ void P_SpawnDoorRaiseIn5Mins
   sec->ceilingdata = door; //jff 2/22/98
   sec->special = 0;
 
-  door->thinker.function = T_VerticalDoor;
+  door->thinker.function = (think_t)T_VerticalDoor;
   door->sector = sec;
   door->direction = 2;
   door->type = raiseIn5Mins;

@@ -6,7 +6,11 @@
 #include "p_checksum.h"
 #include "md5.h"
 #include "doomstat.h" /* players{,ingame} */
-#include "lprintf.h"
+//#include "lprintf.h"
+#include "config.h"
+
+#undef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 namespace prboom
 {
@@ -87,7 +91,7 @@ void checksum_gamestate(int tic) {
         doom_snprintf (buffer, sizeof(buffer), "%d", players[i].health);
         buffer[sizeof(buffer)-1] = 0;
 
-        MD5Update(&md5ctx, (md5byte const *)&buffer, strlen(buffer));
+        MD5Update(&md5ctx, (md5byte const *)&buffer, (unsigned int)strlen(buffer));
     }
     MD5Final(digest, &md5ctx);
     for (i=0; i<16; i++) {

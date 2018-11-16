@@ -1,3 +1,4 @@
+#if 0
 /* Emacs style mode select   -*- C++ -*-
  *-----------------------------------------------------------------------------
  *
@@ -45,10 +46,7 @@
 #endif
 #include <fcntl.h>
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
 #include "doomstat.h"
 #include "d_net.h"
 #include "f_finale.h"
@@ -3962,3 +3960,4 @@ void G_CheckDemoContinue(void)
 }
 
 }
+#endif

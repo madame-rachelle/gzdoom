@@ -40,11 +40,7 @@
  *-----------------------------------------------------------------------------
  */
 
-
-// use config.h if autoconf made one -- josh
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,9 +48,9 @@
 #include "z_zone.h"
 #include "doomstat.h"
 #include "m_argv.h"
-#include "v_video.h"
+//#include "v_video.h"
 #include "g_game.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 
 #ifdef DJGPP
 #include <dpmi.h>
@@ -397,7 +393,7 @@ void *(Z_Malloc)(size_t size, int tag, void **user
 #ifdef HAVE_LIBDMALLOC
   while (!(block = dmalloc_malloc(file,line,size + HEADER_SIZE,DMALLOC_FUNC_MALLOC,0,0))) {
 #else
-  while (!(block = (malloc)(size + HEADER_SIZE))) {
+  while (!(block = (memblock_t*)malloc(size + HEADER_SIZE))) {
 #endif
     if (!blockbytag[PU_CACHE])
       I_Error ("Z_Malloc: Failure trying to allocate %lu bytes"
@@ -676,7 +672,7 @@ char *(Z_Strdup)(const char *s, int tag, void **user
 #endif
                 )
 {
-  return strcpy((Z_Malloc)(strlen(s)+1, tag, user DA(file, line)), s);
+  return strcpy((char*)Z_Malloc(strlen(s)+1, tag, user DA(file, line)), s);
 }
 
 void (Z_CheckHeap)(

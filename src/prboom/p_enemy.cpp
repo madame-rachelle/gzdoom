@@ -46,14 +46,15 @@
 #include "g_game.h"
 #include "p_enemy.h"
 #include "p_tick.h"
-#include "i_sound.h"
+//#include "i_sound.h"
 #include "m_bbox.h"
 #include "hu_stuff.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "e6y.h"//e6y
 
 namespace prboom
 {
+int I_GetSfxLumpNum(sfxinfo_t *sfxinfo);
 
 static mobj_t *current_actor;
 
@@ -270,7 +271,7 @@ static dboolean P_IsOnLift(const mobj_t *actor)
   int l;
 
   // Short-circuit: it's on a lift which is active.
-  if (sec->floordata && ((thinker_t *) sec->floordata)->function==T_PlatRaise)
+  if (sec->floordata && ((thinker_t *) sec->floordata)->function==(think_t)T_PlatRaise)
     return true;
 
   // Check to see if it's in a sector which can be activated as a lift.
@@ -306,8 +307,8 @@ static int P_IsUnderDamage(mobj_t *actor)
   const ceiling_t *cl;             // Crushing ceiling
   int dir = 0;
   for (seclist=actor->touching_sectorlist; seclist; seclist=seclist->m_tnext)
-    if ((cl = seclist->m_sector->ceilingdata) &&
-  cl->thinker.function == T_MoveCeiling)
+    if ((cl = (ceiling_t*)seclist->m_sector->ceilingdata) &&
+  cl->thinker.function == (think_t)T_MoveCeiling)
       dir |= cl->direction;
   return dir;
 }
@@ -816,7 +817,7 @@ static dboolean P_LookForPlayers(mobj_t *actor, dboolean allaround)
 
         if (actor->info->missilestate)
     {
-      P_SetMobjState(actor, actor->info->seestate);
+      P_SetMobjState(actor, (statenum_t)actor->info->seestate);
       actor->flags &= ~MF_JUSTHIT;
     }
 
@@ -1036,7 +1037,7 @@ void A_KeenDie(mobj_t* mo)
   // scan the remaining thinkers to see if all Keens are dead
 
   for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (th->function == P_MobjThinker)
+    if (th->function == (think_t)P_MobjThinker)
       {
         mobj_t *mo2 = (mobj_t *) th;
         if (mo2 != mo && mo2->type == mo->type && mo2->health > 0)
@@ -1107,7 +1108,7 @@ void A_Look(mobj_t *actor)
       else
         S_StartSound(actor, sound);
     }
-  P_SetMobjState(actor, actor->info->seestate);
+  P_SetMobjState(actor, (statenum_t)actor->info->seestate);
 }
 
 //
@@ -1172,7 +1173,7 @@ void A_Chase(mobj_t *actor)
   if (!actor->target || !(actor->target->flags&MF_SHOOTABLE))
     {
       if (!P_LookForTargets(actor,true)) // look for a new target
-  P_SetMobjState(actor, actor->info->spawnstate); // no new target
+  P_SetMobjState(actor, (statenum_t)actor->info->spawnstate); // no new target
       return;
     }
 
@@ -1190,7 +1191,7 @@ void A_Chase(mobj_t *actor)
     {
       if (actor->info->attacksound)
         S_StartSound(actor, actor->info->attacksound);
-      P_SetMobjState(actor, actor->info->meleestate);
+      P_SetMobjState(actor, (statenum_t)actor->info->meleestate);
       /* killough 8/98: remember an attack
       * cph - DEMOSYNC? */
       if (!actor->info->missilestate)
@@ -1203,7 +1204,7 @@ void A_Chase(mobj_t *actor)
     if (!(gameskill < sk_nightmare && !fastparm && actor->movecount))
       if (P_CheckMissileRange(actor))
         {
-          P_SetMobjState(actor, actor->info->missilestate);
+          P_SetMobjState(actor, (statenum_t)actor->info->missilestate);
           actor->flags |= MF_JUSTATTACKED;
           return;
         }
@@ -1361,7 +1362,7 @@ void A_CPosRefire(mobj_t *actor)
 
   if (!actor->target || actor->target->health <= 0
       || !P_CheckSight(actor, actor->target))
-stop:  P_SetMobjState(actor, actor->info->seestate);
+stop:  P_SetMobjState(actor, (statenum_t)actor->info->seestate);
 }
 
 void A_SpidRefire(mobj_t* actor)
@@ -1380,7 +1381,7 @@ void A_SpidRefire(mobj_t* actor)
   if (!actor->target || actor->target->health <= 0
       || actor->flags & actor->target->flags & MF_FRIEND
       || !P_CheckSight(actor, actor->target))
-    stop: P_SetMobjState(actor, actor->info->seestate);
+    stop: P_SetMobjState(actor, (statenum_t)actor->info->seestate);
 }
 
 void A_BspiAttack(mobj_t *actor)
@@ -1709,7 +1710,7 @@ void A_VileChase(mobj_t* actor)
                   S_StartSound(corpsehit, sfx_slop);
                   info = corpsehit->info;
 
-                  P_SetMobjState(corpsehit,info->raisestate);
+                  P_SetMobjState(corpsehit,(statenum_t)info->raisestate);
 
                   if (comp[comp_vile])                              // phares
                     corpsehit->height <<= 2;                        //   |
@@ -2022,7 +2023,7 @@ static void A_PainShootSkull(mobj_t *actor, angle_t angle)
       int count = 0;
       thinker_t *currentthinker = NULL;
       while ((currentthinker = P_NextThinker(currentthinker,th_all)) != NULL)
-        if ((currentthinker->function == P_MobjThinker)
+        if ((currentthinker->function == (think_t)P_MobjThinker)
             && ((mobj_t *)currentthinker)->type == MT_SKULL)
           count++;
       if (count > 20)                                               // phares
@@ -2321,7 +2322,7 @@ void A_BossDeath(mobj_t *mo)
     // scan the remaining thinkers to see
     // if all bosses are dead
   for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    if (th->function == P_MobjThinker)
+    if (th->function == (think_t)P_MobjThinker)
       {
         mobj_t *mo2 = (mobj_t *) th;
         if (mo2 != mo && mo2->type == mo->type && mo2->health > 0)
@@ -2410,7 +2411,7 @@ void A_LoadShotgun2(player_t *player, pspdef_t *psp)
 void A_CloseShotgun2(player_t *player, pspdef_t *psp)
 {
   S_StartSound(player->mo, sfx_dbcls);
-  A_ReFire(player,psp);
+  A_ReFire(/*player,psp*/);
 }
 
 // killough 2/7/98: Remove limit on icon landings:
@@ -2435,14 +2436,14 @@ void P_SpawnBrainTargets(void)  // killough 3/26/98: renamed old function
   for (thinker = thinkercap.next ;
        thinker != &thinkercap ;
        thinker = thinker->next)
-    if (thinker->function == P_MobjThinker)
+    if (thinker->function == (think_t)P_MobjThinker)
       {
         mobj_t *m = (mobj_t *) thinker;
 
         if (m->type == MT_BOSSTARGET )
           {   // killough 2/7/98: remove limit on icon landings:
             if (numbraintargets >= numbraintargets_alloc)
-              braintargets = realloc(braintargets,
+              braintargets = (mobj_t**)realloc(braintargets,
                       (numbraintargets_alloc = numbraintargets_alloc ?
                        numbraintargets_alloc*2 : 32) *sizeof *braintargets);
             braintargets[numbraintargets++] = m;
@@ -2600,7 +2601,7 @@ void A_SpawnFly(mobj_t *mo)
   P_UpdateThinker(&newmobj->thinker);
 
   if (P_LookForTargets(newmobj,true))      /* killough 9/4/98 */
-    P_SetMobjState(newmobj, newmobj->info->seestate);
+    P_SetMobjState(newmobj, (statenum_t)newmobj->info->seestate);
 
     // telefrag anything in this spot
   P_TeleportMove(newmobj, newmobj->x, newmobj->y, true); /* killough 8/9/98 */
@@ -2698,7 +2699,7 @@ void A_Spawn(mobj_t *mo)
     {
       mobj_t *newmobj = 
       P_SpawnMobj(mo->x, mo->y, (mo->state->misc2 << FRACBITS) + mo->z,
-      mo->state->misc1 - 1);
+      (mobjtype_t)(mo->state->misc1 - 1));
       if (compatibility_level == mbf_compatibility && 
           !prboom_comp[PC_DO_NOT_INHERIT_FRIENDLYNESS_FLAG_ON_SPAWN].state)
       /* CPhipps - no friendlyness (yet)*/ //e6y: why not?
@@ -2751,7 +2752,7 @@ void A_RandomJump(mobj_t *mo)
     return;
 
   if (P_Random(pr_randomjump) < mo->state->misc2)
-    P_SetMobjState(mo, mo->state->misc1);
+    P_SetMobjState(mo, (statenum_t)mo->state->misc1);
 }
 
 //

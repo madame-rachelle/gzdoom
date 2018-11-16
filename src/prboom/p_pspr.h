@@ -39,6 +39,7 @@
 
 #include "m_fixed.h"
 #include "tables.h"
+#include "d_player.h"
 
 /* Needs to include the precompiled sprite animation tables.
  *
@@ -85,7 +86,7 @@ typedef struct
   fixed_t sy;
 } pspdef_t;
 
-typedef enum
+enum
 {
     CENTERWEAPON_OFF,
     CENTERWEAPON_HOR,

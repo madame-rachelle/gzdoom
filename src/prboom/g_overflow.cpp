@@ -31,9 +31,7 @@
  *---------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -41,10 +39,11 @@
 #include "g_overflow.h"
 
 #include "doomstat.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 #include "m_argv.h"
 #include "m_misc.h"
 #include "e6y.h"
+#include "r_main.h"
 
 namespace prboom
 {
@@ -342,8 +341,8 @@ void RejectOverrun(int rejectlump, const byte **rejectmatrix, int totallines)
   {
     // allocate a new block and copy the reject table into it; zero the rest
     // PU_LEVEL => will be freed on level exit
-    newreject = Z_Malloc(required, PU_LEVEL, NULL);
-    *rejectmatrix = memmove(newreject, *rejectmatrix, length);
+    newreject = (byte*)Z_Malloc(required, PU_LEVEL, NULL);
+    *rejectmatrix = (byte*)memmove(newreject, *rejectmatrix, length);
 
     // e6y
     // PrBoom 2.2.5 and 2.2.6 padded a short REJECT with 0xff

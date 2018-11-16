@@ -37,6 +37,7 @@
 #include <cstdint>
 
 #include "r_defs.h"
+#include "p_mobj.h"
 
 namespace prboom
 {

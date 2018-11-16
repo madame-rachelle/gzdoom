@@ -32,7 +32,7 @@
  *-----------------------------------------------------------------------------*/
 
 #include "doomstat.h"
-#include "dstrings.h"
+//#include "dstrings.h"
 #include "m_random.h"
 #include "am_map.h"
 #include "r_main.h"
@@ -40,7 +40,7 @@
 #include "sounds.h"
 #include "d_deh.h"  // Ty 03/22/98 - externalized strings
 #include "p_tick.h"
-#include "lprintf.h"
+//#include "lprintf.h"
 
 #include "p_inter.h"
 #include "p_enemy.h"
@@ -567,7 +567,7 @@ void P_TouchSpecialThing(mobj_t *special, mobj_t *toucher)
           player->backpack = true;
         }
       for (i=0 ; i<NUMAMMO ; i++)
-        P_GiveAmmo (player, i, 1);
+        P_GiveAmmo (player, (ammotype_t)i, 1);
       player->message = s_GOTBACKPACK; // Ty 03/22/98 - externalized
       break;
 
@@ -786,9 +786,9 @@ static void P_KillMobj(mobj_t *source, mobj_t *target)
   else
   {
     if (target->health < -target->info->spawnhealth && target->info->xdeathstate)
-      P_SetMobjState (target, target->info->xdeathstate);
+      P_SetMobjState (target, (statenum_t)target->info->xdeathstate);
     else
-      P_SetMobjState (target, target->info->deathstate);
+      P_SetMobjState (target, (statenum_t)target->info->deathstate);
   }
 
   target->tics -= P_Random(pr_killtics)&3;
@@ -990,7 +990,7 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
         target->flags |= MF_JUSTHIT;    // fight back!
   }
 
-  P_SetMobjState(target, target->info->painstate);
+  P_SetMobjState(target, (statenum_t)target->info->painstate);
   }//e6y
 
   target->reactiontime = 0;           // we're awake now...
@@ -1022,7 +1022,7 @@ void P_DamageMobj(mobj_t *target,mobj_t *inflictor, mobj_t *source, int damage)
       target->threshold = BASETHRESHOLD;
       if (target->state == &states[target->info->spawnstate]
           && target->info->seestate != S_NULL)
-        P_SetMobjState (target, target->info->seestate);
+        P_SetMobjState (target, (statenum_t)target->info->seestate);
     }
 
   /* killough 11/98: Don't attack a friend, unless hit by that friend.
