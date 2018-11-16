@@ -707,6 +707,7 @@ file( GLOB HEADER_FILES
 	gl/system/*.h
 	gl/textures/*.h
 	gl_load/*.h
+	prboom/*.h
 	*.h
 )
 
@@ -778,6 +779,35 @@ set( POLYRENDER_SOURCES
 	polyrenderer/drawers/poly_draw_args.cpp
 	polyrenderer/drawers/screen_triangle.cpp
 	polyrenderer/math/gpu_types.cpp
+)
+
+set ( PRBOOM_SOURCES
+	prboom/g_game.cpp
+	prboom/g_overflow.cpp
+	prboom/p_ceilng.cpp
+	prboom/p_checksum.cpp
+	prboom/p_doors.cpp
+	prboom/p_enemy.cpp
+	prboom/p_floor.cpp
+	prboom/p_genlin.cpp
+	prboom/p_inter.cpp
+	prboom/p_lights.cpp
+	prboom/p_map.cpp
+	prboom/p_maputl.cpp
+	prboom/p_mobj.cpp
+	prboom/p_plats.cpp
+	prboom/p_pspr.cpp
+	prboom/p_saveg.cpp
+	prboom/p_setup.cpp
+	prboom/p_sight.cpp
+	prboom/p_spec.cpp
+	prboom/p_switch.cpp
+	prboom/p_telept.cpp
+	prboom/p_tick.cpp
+	prboom/p_user.cpp
+	prboom/md5.cpp
+	prboom/doomdef.cpp
+	prboom/z_zone.cpp
 )
 
 # These files will be flagged as "headers" so that they appear in project files
@@ -1245,6 +1275,7 @@ add_executable( zdoom WIN32 MACOSX_BUNDLE
 	${X86_SOURCES}
 	${FASTMATH_SOURCES}
 	${PCH_SOURCES}
+	${PRBOOM_SOURCES}
 	x86.cpp
 	strnatcmp.c
 	zstring.cpp
@@ -1462,3 +1493,4 @@ source_group("Statusbar" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/g_stat
 source_group("Versioning" FILES version.h win32/zdoom.rc)
 source_group("Xlat" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/xlat/.+" FILES ${CMAKE_CURRENT_BINARY_DIR}/xlat_parser.c ${CMAKE_CURRENT_BINARY_DIR}/xlat_parser.h)
 source_group("Source Files" FILES ${CMAKE_CURRENT_BINARY_DIR}/sc_man_scanner.h sc_man_scanner.re)
+source_group("PrBoom" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/prboom/.+")
