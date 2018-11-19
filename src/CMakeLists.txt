@@ -707,6 +707,7 @@ file( GLOB HEADER_FILES
 	gl/system/*.h
 	gl/textures/*.h
 	gl_load/*.h
+	prboom/*.h
 	*.h
 )
 
@@ -1267,6 +1268,42 @@ add_executable( zdoom WIN32 MACOSX_BUNDLE
 	math/tanh.c
 	math/fastsin.cpp
 	zzautozend.cpp
+	prboom/prboom.cpp
+	prboom/pr_p_ceilng.cpp
+	prboom/pr_p_checksum.cpp
+	prboom/pr_p_doors.cpp
+	prboom/pr_p_enemy.cpp
+	prboom/pr_p_floor.cpp
+	prboom/pr_p_genlin.cpp
+	prboom/pr_p_inter.cpp
+	prboom/pr_p_lights.cpp
+	prboom/pr_p_map.cpp
+	prboom/pr_p_maputl.cpp
+	prboom/pr_p_mobj.cpp
+	prboom/pr_p_plats.cpp
+	prboom/pr_p_pspr.cpp
+	prboom/pr_p_saveg.cpp
+	prboom/pr_p_setup.cpp
+	prboom/pr_p_sight.cpp
+	prboom/pr_p_spec.cpp
+	prboom/pr_p_switch.cpp
+	prboom/pr_p_telept.cpp
+	prboom/pr_p_tick.cpp
+	prboom/pr_p_user.cpp
+	prboom/pr_dstrings.cpp
+	prboom/pr_m_bbox.cpp
+	prboom/pr_m_random.cpp
+	prboom/pr_tables.cpp
+	prboom/pr_z_bmalloc.cpp
+	prboom/pr_z_zone.cpp
+	prboom/pr_d_deh.cpp
+	prboom/pr_d_items.cpp
+	prboom/pr_doomdef.cpp
+	prboom/pr_doomstat.cpp
+	prboom/pr_md5.cpp
+	prboom/pr_g_game.cpp
+	prboom/pr_g_overflow.cpp
+	prboom/pr_info.cpp
 )
 
 set_source_files_properties( ${FASTMATH_SOURCES} PROPERTIES COMPILE_FLAGS ${ZD_FASTMATH_FLAG} )
@@ -1459,6 +1496,7 @@ source_group("Scripting\\VM" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/sc
 source_group("Scripting" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/scripting/.+")
 source_group("Shared Game" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/g_shared/.+")
 source_group("Statusbar" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/g_statusbar/.+")
+source_group("Prboom" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/prboom/.+")
 source_group("Versioning" FILES version.h win32/zdoom.rc)
 source_group("Xlat" REGULAR_EXPRESSION "^${CMAKE_CURRENT_SOURCE_DIR}/xlat/.+" FILES ${CMAKE_CURRENT_BINARY_DIR}/xlat_parser.c ${CMAKE_CURRENT_BINARY_DIR}/xlat_parser.h)
 source_group("Source Files" FILES ${CMAKE_CURRENT_BINARY_DIR}/sc_man_scanner.h sc_man_scanner.re)
