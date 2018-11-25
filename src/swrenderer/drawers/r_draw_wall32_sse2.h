@@ -29,9 +29,10 @@ namespace swrenderer
 {
 	namespace DrawWall32TModes
 	{
-		enum class WallBlendModes { Opaque, Masked, AddClamp, SubClamp, RevSubClamp };
+		enum class WallBlendModes { Opaque, Masked, MaskedNiteVis, AddClamp, SubClamp, RevSubClamp };
 		struct OpaqueWall { static const int Mode = (int)WallBlendModes::Opaque; };
 		struct MaskedWall { static const int Mode = (int)WallBlendModes::Masked; };
+		struct MaskedNiteVisWall { static const int Mode = (int)WallBlendModes::MaskedNiteVis; };
 		struct AddClampWall { static const int Mode = (int)WallBlendModes::AddClamp; };
 		struct SubClampWall { static const int Mode = (int)WallBlendModes::SubClamp; };
 		struct RevSubClampWall { static const int Mode = (int)WallBlendModes::RevSubClamp; };
@@ -356,6 +357,28 @@ namespace swrenderer
 				outcolor = _mm_or_si128(outcolor, _mm_set1_epi32(0xff000000));
 				return outcolor;
 			}
+			else if (BlendT::Mode == (int)WallBlendModes::MaskedNiteVis)
+			{
+				BgraColor outcolor;
+				// todo: rewrite as intrinsics, if applicable?
+				if ((int)_mm_unpackus(fgcolor,_mm_setzero_si128()) == 0) return bgcolor;
+
+				// lumi is a desaturated colour and goes between 0.0 and 1.0, this is intentional
+				double lumi = (double)(fgcolor.r * 30 + 
+					fgcolor.g * 59 +
+					fgcolor.b * 11) / 25500.;
+
+				float r = 255.0 - lumi * 255.0;
+				float g = clamp(511.0 - lumi * 511.0, 0.0, 255.0);
+				float b = 255.0 - lumi * 255.0;
+				outcolor.r = (int)r;
+				outcolor.g = (int)g;
+				outcolor.b = (int)b;
+				__m128i ioutcolor = __m128i(fgcolor);
+				ioutcolor = _mm_packus_epi16(ioutcolor, _mm_setzero_si128());
+				ioutcolor = _mm_or_si128(ioutcolor, _mm_set1_epi32(0xff000000));
+				return ioutcolor;
+			}
 			else
 			{
 				uint32_t alpha0 = APART(ifgcolor0);
@@ -410,6 +433,7 @@ namespace swrenderer
 
 	typedef DrawWall32T<DrawWall32TModes::OpaqueWall> DrawWall32Command;
 	typedef DrawWall32T<DrawWall32TModes::MaskedWall> DrawWallMasked32Command;
+	typedef DrawWall32T<DrawWall32TModes::MaskedNiteVisWall> DrawWallMaskedNiteVis32Command;
 	typedef DrawWall32T<DrawWall32TModes::AddClampWall> DrawWallAddClamp32Command;
 	typedef DrawWall32T<DrawWall32TModes::SubClampWall> DrawWallSubClamp32Command;
 	typedef DrawWall32T<DrawWall32TModes::RevSubClampWall> DrawWallRevSubClamp32Command;

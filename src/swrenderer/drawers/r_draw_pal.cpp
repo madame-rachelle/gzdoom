@@ -260,6 +260,50 @@ namespace swrenderer
 		}
 	}
 
+	void DrawWallMaskedNiteVis1PalCommand::Execute(DrawerThread *thread)
+	{
+		uint32_t fracstep = args.TextureVStep();
+		uint32_t frac = args.TextureVPos();
+		uint8_t *colormap = args.Colormap(args.Viewport());
+		int count = args.Count();
+		const uint8_t *source = args.TexturePixels();
+		uint8_t *dest = args.Dest();
+		int bits = args.TextureFracBits();
+		int pitch = args.Viewport()->RenderTarget->GetPitch();
+		DrawerLight *dynlights = args.dc_lights;
+		int num_dynlights = args.dc_num_lights;
+		float viewpos_z = args.dc_viewpos.Z;
+		float step_viewpos_z = args.dc_viewpos_step.Z;
+
+		count = thread->count_for_thread(args.DestY(), count);
+		if (count <= 0)
+			return;
+
+		dest = thread->dest_for_thread(args.DestY(), pitch, dest);
+		frac += fracstep * thread->skipped_by_thread(args.DestY());
+		fracstep *= thread->num_cores;
+		pitch *= thread->num_cores;
+
+		do
+		{
+			uint8_t pix = source[frac >> bits];
+			if (pix != 0)
+			{
+				// lumi is a desaturated colour and goes between 0.0 and 1.0, this is intentional
+				double lumi = (double)(GPalette.BaseColors[colormap[pix]].r * 30 + 
+					GPalette.BaseColors[colormap[pix]].g * 59 +
+					GPalette.BaseColors[colormap[pix]].b * 11) / 25500.;
+
+				float r = 255.0 - lumi * 255.0;
+				float g = clamp(511.0 - lumi * 511.0, 0.0, 255.0);
+				float b = 255.0 - lumi * 255.0;
+				*dest = RGB256k.RGB[(int)r>>2][(int)g>>2][(int)b>>2];
+			}
+			frac += fracstep;
+			dest += pitch;
+		} while (--count);
+	}
+
 	void DrawWallAdd1PalCommand::Execute(DrawerThread *thread)
 	{
 		uint32_t fracstep = args.TextureVStep();

@@ -246,6 +246,7 @@ namespace swrenderer
 		
 		void DrawWallColumn(const WallDrawerArgs &args) override;
 		void DrawWallMaskedColumn(const WallDrawerArgs &args) override;
+		void DrawWallMaskedNiteVisColumn(const WallDrawerArgs &args) override;
 		void DrawWallAddColumn(const WallDrawerArgs &args) override;
 		void DrawWallAddClampColumn(const WallDrawerArgs &args) override;
 		void DrawWallSubClampColumn(const WallDrawerArgs &args) override;

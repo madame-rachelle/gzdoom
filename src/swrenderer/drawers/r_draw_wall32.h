@@ -29,9 +29,10 @@ namespace swrenderer
 {
 	namespace DrawWall32TModes
 	{
-		enum class WallBlendModes { Opaque, Masked, AddClamp, SubClamp, RevSubClamp };
+		enum class WallBlendModes { Opaque, Masked, MaskedNiteVis, AddClamp, SubClamp, RevSubClamp };
 		struct OpaqueWall { static const int Mode = (int)WallBlendModes::Opaque; };
 		struct MaskedWall { static const int Mode = (int)WallBlendModes::Masked; };
+		struct MaskedNiteVisWall { static const int Mode = (int)WallBlendModes::MaskedNiteVis; };
 		struct AddClampWall { static const int Mode = (int)WallBlendModes::AddClamp; };
 		struct SubClampWall { static const int Mode = (int)WallBlendModes::SubClamp; };
 		struct RevSubClampWall { static const int Mode = (int)WallBlendModes::RevSubClamp; };
@@ -292,6 +293,24 @@ namespace swrenderer
 			{
 				return (ifgcolor == 0) ? bgcolor : fgcolor;
 			}
+			else if (BlendT::Mode == (int)WallBlendModes::MaskedNiteVis)
+			{
+				if (ifgcolor == 0) return bgcolor;
+
+				// lumi is a desaturated colour and goes between 0.0 and 1.0, this is intentional
+				double lumi = (double)(fgcolor.r * 30 + 
+					fgcolor.g * 59 +
+					fgcolor.b * 11) / 25500.;
+
+				float r = 255.0 - lumi * 255.0;
+				float g = clamp(511.0 - lumi * 511.0, 0.0, 255.0);
+				float b = 255.0 - lumi * 255.0;
+				BgraColor outcolor; // translate to ints
+				outcolor.r = r;
+				outcolor.g = g;
+				outcolor.b = b;
+				return outcolor;				
+			}
 			else
 			{
 				uint32_t alpha = APART(ifgcolor);
@@ -335,6 +354,7 @@ namespace swrenderer
 
 	typedef DrawWall32T<DrawWall32TModes::OpaqueWall> DrawWall32Command;
 	typedef DrawWall32T<DrawWall32TModes::MaskedWall> DrawWallMasked32Command;
+	typedef DrawWall32T<DrawWall32TModes::MaskedNiteVisWall> DrawWallMaskedNiteVis32Command;
 	typedef DrawWall32T<DrawWall32TModes::AddClampWall> DrawWallAddClamp32Command;
 	typedef DrawWall32T<DrawWall32TModes::SubClampWall> DrawWallSubClamp32Command;
 	typedef DrawWall32T<DrawWall32TModes::RevSubClampWall> DrawWallRevSubClamp32Command;

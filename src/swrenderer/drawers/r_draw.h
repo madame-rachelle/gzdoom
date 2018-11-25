@@ -59,6 +59,7 @@ namespace swrenderer
 		virtual ~SWPixelFormatDrawers() { }
 		virtual void DrawWallColumn(const WallDrawerArgs &args) = 0;
 		virtual void DrawWallMaskedColumn(const WallDrawerArgs &args) = 0;
+		virtual void DrawWallMaskedNiteVisColumn(const WallDrawerArgs &args) = 0;
 		virtual void DrawWallAddColumn(const WallDrawerArgs &args) = 0;
 		virtual void DrawWallAddClampColumn(const WallDrawerArgs &args) = 0;
 		virtual void DrawWallSubClampColumn(const WallDrawerArgs &args) = 0;

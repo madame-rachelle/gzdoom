@@ -90,6 +90,11 @@ namespace swrenderer
 		Queue->Push<DrawWallMasked32Command>(args);
 	}
 	
+	void SWTruecolorDrawers::DrawWallMaskedNiteVisColumn(const WallDrawerArgs &args)
+	{
+		Queue->Push<DrawWallMaskedNiteVis32Command>(args);
+	}
+	
 	void SWTruecolorDrawers::DrawWallAddColumn(const WallDrawerArgs &args)
 	{
 		Queue->Push<DrawWallAddClamp32Command>(args);

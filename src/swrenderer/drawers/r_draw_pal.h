@@ -24,6 +24,7 @@ namespace swrenderer
 
 	class DrawWall1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
 	class DrawWallMasked1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
+	class DrawWallMaskedNiteVis1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
 	class DrawWallAdd1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
 	class DrawWallAddClamp1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
 	class DrawWallSubClamp1PalCommand : public PalWall1Command { public: using PalWall1Command::PalWall1Command; void Execute(DrawerThread *thread) override; };
@@ -232,6 +233,7 @@ namespace swrenderer
 		
 		void DrawWallColumn(const WallDrawerArgs &args) override { Queue->Push<DrawWall1PalCommand>(args); }
 		void DrawWallMaskedColumn(const WallDrawerArgs &args) override { Queue->Push<DrawWallMasked1PalCommand>(args); }
+		void DrawWallMaskedNiteVisColumn(const WallDrawerArgs &args) override { Queue->Push<DrawWallMaskedNiteVis1PalCommand>(args); }
 
 		void DrawWallAddColumn(const WallDrawerArgs &args) override
 		{
