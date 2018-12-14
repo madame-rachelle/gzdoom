@@ -1229,8 +1229,15 @@ class OptionMenuItemScreenResolution : OptionMenuItem
 
 class VideoModeMenu : OptionMenu
 {
-	static bool SetSelectedSize()
+	protected void SetMenuCVARs()
 	{
-		return false;
+		CVar.FindCVar("menu_resolution_custom_width").SetInt(vid_scale_customwidth);
+		CVar.FindCVar("menu_resolution_custom_height").SetInt(vid_scale_customheight);
+	}
+
+	override void Init(Menu parent, OptionMenuDescriptor desc)
+	{
+		super.Init(parent, desc);
+		SetMenuCVARs();
 	}
 }
