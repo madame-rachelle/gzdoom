@@ -196,12 +196,10 @@ void IShadowMap::UploadAABBTree()
 {
 	if (!ValidateAABBTree(&level))
 	{
-		if (!mNodesBuffer)
-			mNodesBuffer = screen->CreateDataBuffer(2, true);
+		mNodesBuffer = screen->CreateDataBuffer(2, true);
 		mNodesBuffer->SetData(mAABBTree->NodesSize(), mAABBTree->Nodes());
 
-		if (!mLinesBuffer)
-			mLinesBuffer = screen->CreateDataBuffer(3, true);
+		mLinesBuffer = screen->CreateDataBuffer(3, true);
 		mLinesBuffer->SetData(mAABBTree->LinesSize(), mAABBTree->Lines());
 	}
 	else if (mAABBTree->Update())

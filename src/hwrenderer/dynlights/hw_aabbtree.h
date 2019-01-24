@@ -47,8 +47,6 @@ public:
 	// Shoot a ray from ray_start to ray_end and return the closest hit as a fractional value between 0 and 1. Returns 1 if no line was hit.
 	double RayTest(const DVector3 &ray_start, const DVector3 &ray_end);
 
-	bool Update();
-
 	const void *Nodes() const { return nodes.Data(); }
 	const void *Lines() const { return treelines.Data(); }
 	size_t NodesSize() const { return nodes.Size() * sizeof(AABBTreeNode); }

@@ -434,6 +434,7 @@ TArray<uint8_t> OpenGLFrameBuffer::GetScreenshotBuffer(int &pitch, ESSType &colo
 	gamma = 1;
 	if (vid_hdr_active && fullscreen)
 		gamma *= 2.2f;
+
 	return ScreenshotBuffer;
 }
 
