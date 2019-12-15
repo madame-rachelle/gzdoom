@@ -375,8 +375,8 @@ bool Win32GLVideo::SetupPixelFormat(int multisample)
 
 		if (pfd.dwFlags & PFD_GENERIC_FORMAT)
 		{
-			I_Error("R_OPENGL: OpenGL driver not accelerated!");
-			return false;
+			throw COpenGLInitError("OpenGL driver not accelerated!");
+			//return false;
 		}
 	}
 

@@ -131,7 +131,8 @@ void gl_LoadExtensions()
 	// Don't even start if it's lower than 2.0 or no framebuffers are available (The framebuffer extension is needed for glGenerateMipmapsEXT!)
 	if (gl_version < 3.3f)
 	{
-		I_FatalError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFor older versions of OpenGL please download the vintage build of " GAMENAME ".\n");
+		throw COpenGLInitError("Unsupported OpenGL version.\nAt least OpenGL 3.3 is required to run " GAMENAME ".\nFor older versions of OpenGL please download the vintage build of " GAMENAME ".\n");
+		return;
 	}
 
 

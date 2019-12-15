@@ -129,12 +129,10 @@ void I_InitGraphics ()
 		// are the active app. Huh?
 	}
 
-	if (vid_preferbackend == 2)
-	{
-		Video = new Win32PolyVideo();
-	}
+	uint32_t try_backend = vid_preferbackend;
+
 #ifdef HAVE_VULKAN
-	else if (vid_preferbackend == 1)
+	if (try_backend == 1)
 	{
 		// first try Vulkan, if that fails OpenGL
 		try
@@ -144,16 +142,30 @@ void I_InitGraphics ()
 		catch (CVulkanError &error)
 		{
 			Printf(TEXTCOLOR_RED "Initialization of Vulkan failed: %s\n", error.what());
-			Video = new Win32GLVideo();
+			try_backend = 0;
 		}
 	}
-#endif
-	else
+#else
+	if (try_backend == 1)
 	{
-		Video = new Win32GLVideo();
+		Printf(TEXTCOLOR_RED "Vulkan is unavailable in this build! Trying OpenGL...\n");
+		try_backend = 0;
+	}
+#endif
+	if (try_backend == 0)
+	{
+		try
+		{
+			Video = new Win32GLVideo();
+		}
+		catch (COpenGLInitError &error)
+		{
+			Printf(TEXTCOLOR_RED "Initialization of OpenGL failed: %s\n", error.what());
+			try_backend = 2;
+		}
 	}
 
-	if (Video == NULL)
+	if (try_backend == 2 || Video == NULL)
 		Video = new Win32PolyVideo();
 
 	// we somehow STILL don't have a display!!

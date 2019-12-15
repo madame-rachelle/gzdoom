@@ -104,6 +104,13 @@ public:
 	CVulkanError(const char *message) : CDoomError(message) {}
 };
 
+class COpenGLInitError : public CDoomError
+{
+public:
+	COpenGLInitError() : CDoomError() {}
+	COpenGLInitError(const char *message) : CDoomError(message) {}
+};
+
 class CExitEvent : public std::exception
 {
 	int m_reason;
