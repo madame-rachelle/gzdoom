@@ -630,7 +630,7 @@ class Actor : Thinker native
 	virtual void PostTeleport( Vector3 destpos, double destangle, int flags ) {}
 	
 	native virtual bool OkayToSwitchTarget(Actor other);
-	native static class<Actor> GetReplacement(class<Actor> cls);
+	native static class<Actor> GetReplacement(class<Actor> cls, bool invcheck = false);
 	native static class<Actor> GetReplacee(class<Actor> cls);
 	native static int GetSpriteIndex(name sprt);
 	native clearscope static double GetDefaultSpeed(class<Actor> type);

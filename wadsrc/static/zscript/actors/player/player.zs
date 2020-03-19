@@ -1877,6 +1877,9 @@ class PlayerPawn : Actor
 			Class<Actor> ti = di.Name;
 			if (ti)
 			{
+				// Check for Absolute Replacement
+				ti = GetReplacement(ti, invcheck:true);
+
 				let tinv = (class<Inventory>)(ti);
 				if (!tinv)
 				{
