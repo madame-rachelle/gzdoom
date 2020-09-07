@@ -177,6 +177,15 @@ CCMD (fly)
 	Net_WriteByte (CHT_FLY);
 }
 
+CCMD (flipworld)
+{
+	if (CheckCheatmode ())
+		return;
+
+	Net_WriteByte (DEM_GENERICCHEAT);
+	Net_WriteByte (CHT_FLIP);
+}
+
 /*
 ==================
 Cmd_Noclip

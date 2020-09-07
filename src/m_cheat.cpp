@@ -177,6 +177,13 @@ void cht_DoCheat (player_t *player, int cheat)
 			msg = GStrings("TXT_LEADBOOTSOFF");
 		break;
 
+	case CHT_FLIP:
+		if (player->mo != NULL)
+		{
+			player->mo->flags8 ^= MF8_FLIPWORLD;
+		}
+		break;
+
 	case CHT_FLY:
 		if (player->mo != NULL)
 		{

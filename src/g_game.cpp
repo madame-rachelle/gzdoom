@@ -868,6 +868,8 @@ void G_AddViewAngle (int yaw, bool mouse)
 		return;
 
 	}
+	if (players[consoleplayer].mo && players[consoleplayer].mo->flags8 & MF8_FLIPWORLD)
+		yaw *= -1;
 	yaw = LookAdjust(yaw);
 	LocalViewAngle -= yaw;
 	if (yaw != 0)

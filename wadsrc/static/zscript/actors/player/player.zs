@@ -1192,6 +1192,9 @@ class PlayerPawn : Actor
 			side *= SideMove2;
 		}
 
+		if (player.mo.bFlipWorld)
+			side *= -1;
+
 		if (!player.morphTics)
 		{
 			double factor = 1.;
