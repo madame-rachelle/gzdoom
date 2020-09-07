@@ -1231,6 +1231,9 @@ void DAutomap::ClipRotatedExtents (double pivotx, double pivoty)
 
 void DAutomap::ScrollParchment (double dmapx, double dmapy)
 {
+	if (players[consoleplayer].camera->flags8 & MF8_FLIPWORLD)
+		dmapx *= -1;
+
 	mapxstart = mapxstart - dmapx * scale_mtof;
 	mapystart = mapystart - dmapy * scale_mtof;
 
@@ -1735,7 +1738,10 @@ void DAutomap::drawMline (mline_t *ml, const AMColor &color)
 
 	if (clipMline (ml, &fl))
 	{
-		twod->AddLine (f_x + fl.a.x, f_y + fl.a.y, f_x + fl.b.x, f_y + fl.b.y, -1, -1, INT_MAX, INT_MAX, color.RGB);
+		if (players[consoleplayer].camera->flags8 & MF8_FLIPWORLD)
+			twod->AddLine (screen->GetWidth() - (f_x + fl.a.x), f_y + fl.a.y, screen->GetWidth() - (f_x + fl.b.x), f_y + fl.b.y, -1, -1, INT_MAX, INT_MAX, color.RGB);
+		else
+			twod->AddLine (f_x + fl.a.x, f_y + fl.a.y, f_x + fl.b.x, f_y + fl.b.y, -1, -1, INT_MAX, INT_MAX, color.RGB);
 	}
 }
 
@@ -1979,6 +1985,8 @@ void DAutomap::drawSubsectors()
 			}
 			points[j].X = float(f_x + ((pt.x - m_x) * scale));
 			points[j].Y = float(f_y + (f_h - (pt.y - m_y) * scale));
+			if (players[consoleplayer].camera->flags8 & MF8_FLIPWORLD)
+				points[j].X = screen->GetWidth() - points[j].X;
 		}
 		// For lighting and texture determination
 		sector_t *sec = AM_FakeFlat(players[consoleplayer].camera, sub->render_sector, &tempsec);
@@ -2132,6 +2140,12 @@ void DAutomap::drawSubsectors()
 			{
 				// The hardware renderer's light modes 0, 1 and 4 use a linear light scale which must be used here as well. Otherwise the automap gets too dark.
 				fadelevel = 1. - clamp(floorlight, 0, 255) / 255.f;
+			}
+
+			if (players[consoleplayer].camera->flags8 & MF8_FLIPWORLD)
+			{
+				scalex *= -1;
+				originx *= -1;
 			}
 
 			twod->AddPoly(TexMan.GetGameTexture(maptex, true),
@@ -3018,19 +3032,36 @@ void DAutomap::DrawMarker (FGameTexture *tex, double x, double y, int yadjust,
 	{
 		rotatePoint (&x, &y);
 	}
-	DrawTexture(twod, tex, CXMTOF(x) + f_x, CYMTOF(y) + yadjust + f_y,
-		DTA_DestWidthF, tex->GetDisplayWidth() * CleanXfac * xscale,
-		DTA_DestHeightF, tex->GetDisplayHeight() * CleanYfac * yscale,
-		DTA_ClipTop, f_y,
-		DTA_ClipBottom, f_y + f_h,
-		DTA_ClipLeft, f_x,
-		DTA_ClipRight, f_x + f_w,
-		DTA_FlipX, flip,
-		DTA_TranslationIndex, translation,
-		DTA_Alpha, alpha,
-		DTA_FillColor, fillcolor,
-		DTA_RenderStyle, renderstyle.AsDWORD,
-		TAG_DONE);
+	if (players[consoleplayer].camera->flags8 & MF8_FLIPWORLD)
+	{
+		DrawTexture(twod, tex, f_w - (CXMTOF(x) + f_x), CYMTOF(y) + yadjust + f_y,
+			DTA_DestWidthF, tex->GetDisplayWidth() * CleanXfac * xscale,
+			DTA_DestHeightF, tex->GetDisplayHeight() * CleanYfac * yscale,
+			DTA_ClipTop, f_y,
+			DTA_ClipBottom, f_y + f_h,
+			DTA_ClipLeft, f_x,
+			DTA_ClipRight, f_x + f_w,
+			DTA_FlipX, !flip,
+			DTA_TranslationIndex, translation,
+			DTA_Alpha, alpha,
+			DTA_FillColor, fillcolor,
+			DTA_RenderStyle, renderstyle.AsDWORD,
+			TAG_DONE);
+	}
+	else
+		DrawTexture(twod, tex, CXMTOF(x) + f_x, CYMTOF(y) + yadjust + f_y,
+			DTA_DestWidthF, tex->GetDisplayWidth() * CleanXfac * xscale,
+			DTA_DestHeightF, tex->GetDisplayHeight() * CleanYfac * yscale,
+			DTA_ClipTop, f_y,
+			DTA_ClipBottom, f_y + f_h,
+			DTA_ClipLeft, f_x,
+			DTA_ClipRight, f_x + f_w,
+			DTA_FlipX, flip,
+			DTA_TranslationIndex, translation,
+			DTA_Alpha, alpha,
+			DTA_FillColor, fillcolor,
+			DTA_RenderStyle, renderstyle.AsDWORD,
+			TAG_DONE);
 }
 
 //=============================================================================
