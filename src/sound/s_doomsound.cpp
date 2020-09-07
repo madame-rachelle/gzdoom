@@ -1052,7 +1052,6 @@ void DoomSoundEngine::CalcPosVel(int type, const void* source, const float pt[3]
 		DVector3 listenpos;
 		int pgroup;
 		AActor* listener = players[consoleplayer].camera;
-		bool reverseSound = (listener && listener->flags8 & MF8_FLIPWORLD);
 
 		if (listener != nullptr)
 		{
@@ -1149,14 +1148,6 @@ void DoomSoundEngine::CalcPosVel(int type, const void* source, const float pt[3]
 			{
 				pos->Y = (float)listenpos.Z;
 			}
-		}
-		if (reverseSound)
-		{
-			if (pos) pos->X = (float)listenpos.X * 2 - pos->X;
-			if (vel) vel->X = -1.;
-			if (pos) pos->Z = (float)listenpos.Y * 2 - pos->Z;
-			if (vel) vel->Z = -1.;
-			//listenpos.X *= -1.;
 		}
 	}
 }
