@@ -265,10 +265,17 @@ public:
 	// The original size of the framebuffer as selected in the video menu.
 	uint64_t FrameTime = 0;
 
+
 private:
 	uint64_t fpsLimitTime = 0;
 
 	bool isIn2D = false;
+
+private:
+	bool sceneFlipped = false;
+public:
+	bool GetSceneFlipped() { return sceneFlipped; }
+	void SetSceneFlipped(bool isFlipped) { sceneFlipped = isFlipped; }
 };
 
 

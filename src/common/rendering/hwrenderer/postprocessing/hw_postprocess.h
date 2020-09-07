@@ -820,6 +820,15 @@ private:
 	PPShader ShadowMap = { "shaders/pp/shadowmap.fp", "", ShadowMapUniforms::Desc() };
 };
 
+class PPFlipX
+{
+public:
+	void Render(PPRenderState *renderstate);
+
+private:
+	PPShader FlipX = { "shaders/pp/flipx.fp", "", {} };
+};
+
 
 
 
@@ -837,6 +846,7 @@ public:
 	PPAmbientOcclusion ssao;
 	PPPresent present;
 	PPShadowMap shadowmap;
+	PPFlipX flipx;
 	PPCustomShaders customShaders;
 
 

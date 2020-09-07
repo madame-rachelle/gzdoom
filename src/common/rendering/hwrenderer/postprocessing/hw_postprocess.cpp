@@ -1115,6 +1115,21 @@ void PPCustomShaderInstance::AddUniformField(size_t &offset, const FString &name
 	}
 }
 
+void PPFlipX::Render(PPRenderState* renderstate)
+{
+	if (!screen->GetSceneFlipped())
+		return;
+	renderstate->Clear();
+	renderstate->Shader = &FlipX;
+	renderstate->Uniforms.Clear();
+	renderstate->Viewport = screen->mSceneViewport;
+	renderstate->SetInputCurrent(0, PPFilterMode::Linear);
+	renderstate->SetNoBlend();
+	renderstate->SetOutputNext();
+
+	renderstate->Draw();
+}
+
 
 void Postprocess::Pass1(PPRenderState* state, int fixedcm, int sceneWidth, int sceneHeight)
 {
@@ -1129,5 +1144,6 @@ void Postprocess::Pass2(PPRenderState* state, int fixedcm, float flash, int scen
 	colormap.Render(state, fixedcm, flash);
 	lens.Render(state);
 	fxaa.Render(state);
+	flipx.Render(state);
 	customShaders.Run(state, "scene");
 }

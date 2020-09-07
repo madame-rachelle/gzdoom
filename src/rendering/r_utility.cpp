@@ -766,6 +766,8 @@ void R_SetupFrame (FRenderViewpoint &viewpoint, FViewWindow &viewwindow, AActor 
 		I_Error ("You lost your body. Bad dehacked work is likely to blame.");
 	}
 
+	screen->SetSceneFlipped(viewpoint.camera->flags8 & MF8_FLIPWORLD);
+
 	iview = FindPastViewer (viewpoint.camera);
 
 	int nowtic = I_GetTime ();
