@@ -196,7 +196,7 @@ bool DirEntryExists(const char *pathname, bool *isdir)
 
 #ifndef _WIN32
 	struct stat info;
-	bool res = stat(pathname, &info) == 0;
+	bool res = lstat(pathname, &info) == 0;
 #else
 	// Windows must use the wide version of stat to preserve non-standard paths.
 	auto wstr = WideString(pathname);
@@ -222,7 +222,7 @@ bool GetFileInfo(const char* pathname, size_t *size, time_t *time)
 
 #ifndef _WIN32
 	struct stat info;
-	bool res = stat(pathname, &info) == 0;
+	bool res = lstat(pathname, &info) == 0;
 #else
 	// Windows must use the wide version of stat to preserve non-standard paths.
 	auto wstr = WideString(pathname);

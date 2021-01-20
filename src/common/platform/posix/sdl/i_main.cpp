@@ -104,7 +104,7 @@ void I_DetectOS()
 	{
 		struct stat dummy;
 
-		if (stat(path, &dummy) != 0)
+		if (lstat(path, &dummy) != 0)
 			continue;
 
 		char cmdline[256];

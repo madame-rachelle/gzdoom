@@ -207,7 +207,7 @@ bool D_AddFile(TArray<FString>& wadfiles, const char* file, bool check, int posi
 #ifdef __unix__
 	// Confirm file exists in filesystem.
 	struct stat info;
-	bool found = stat(file, &info) == 0;
+	bool found = lstat(file, &info) == 0;
 	if (!found)
 	{
 		// File not found, so split file into path and filename so we can enumerate the path for the file.
