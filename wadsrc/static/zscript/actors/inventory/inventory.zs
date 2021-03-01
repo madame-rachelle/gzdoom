@@ -560,6 +560,8 @@ class Inventory : Actor
 	{
 		if (toucher == null) return false;
 
+		if (sv_noclassrestrictions) return true;
+
 		int rsize = RestrictedToPlayerClass.Size();
 		if (rsize > 0)
 		{

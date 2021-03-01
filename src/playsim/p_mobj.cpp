@@ -155,6 +155,7 @@ CVAR (Bool, cl_missiledecals, true, CVAR_ARCHIVE)
 CVAR (Bool, addrocketexplosion, false, CVAR_ARCHIVE)
 CVAR (Int, cl_pufftype, 0, CVAR_ARCHIVE);
 CVAR (Int, cl_bloodtype, 0, CVAR_ARCHIVE);
+CVAR (Bool, sv_noclassrestrictions, false, CVAR_SERVERINFO)
 
 // CODE --------------------------------------------------------------------
 
@@ -5480,7 +5481,8 @@ AActor *FLevelLocals::SpawnMapThing (FMapThing *mthing, int position)
 			if (p)
 			{
 				int spawnmask = p->GetSpawnClass();
-				if (spawnmask != 0 && (mthing->ClassFilter & spawnmask) == 0)
+				if ((spawnmask != 0 && (mthing->ClassFilter & spawnmask) == 0) &&
+					!(sv_noclassrestrictions))
 				{ // Not for current class
 					return nullptr;
 				}
