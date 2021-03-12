@@ -164,10 +164,10 @@ void OpenGLFrameBuffer::InitializeState()
 
 	SetViewportRects(nullptr);
 
-	mVertexData = new FFlatVertexBuffer(GetWidth(), GetHeight(), screen->mPipelineNbr);
+	mVertexData = new FFlatVertexBuffer(GetWidth(), GetHeight());
 	mSkyData = new FSkyVertexBuffer;
-	mViewpoints = new HWViewpointBuffer(screen->mPipelineNbr);
-	mLights = new FLightBuffer(screen->mPipelineNbr);
+	mViewpoints = new HWViewpointBuffer;
+	mLights = new FLightBuffer();
 	GLRenderer = new FGLRenderer(this);
 	GLRenderer->Initialize(GetWidth(), GetHeight());
 	static_cast<GLDataBuffer*>(mLights->GetBuffer())->BindBase();
@@ -256,13 +256,10 @@ void OpenGLFrameBuffer::Swap()
 	bool swapbefore = gl_finishbeforeswap && camtexcount == 0;
 	Finish.Reset();
 	Finish.Clock();
-	//if (swapbefore) glFinish();
-	screen->mVertexData->DropSync();
-
+	if (swapbefore) glFinish();
 	FPSLimit();
 	SwapBuffers();
-
-	//if (!swapbefore) glFinish();
+	if (!swapbefore) glFinish();
 	Finish.Unclock();
 	camtexcount = 0;
 	FHardwareTexture::UnbindAll();

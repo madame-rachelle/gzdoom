@@ -29,9 +29,6 @@
 #include "c_cvars.h"
 #include "v_video.h"
 
-CVAR(Bool, gl_customshader, true, 0)
-
-
 static IHardwareTexture* (*layercallback)(int layer, int translation);
 
 void FMaterial::SetLayerCallback(IHardwareTexture* (*cb)(int layer, int translation))
@@ -126,20 +123,17 @@ FMaterial::FMaterial(FGameTexture * tx, int scaleflags)
 		}
 
 		auto index = tx->GetShaderIndex();
-		if (gl_customshader)
+		if (index >= FIRST_USER_SHADER)
 		{
-			if (index >= FIRST_USER_SHADER)
+			const UserShaderDesc &usershader = usershaders[index - FIRST_USER_SHADER];
+			if (usershader.shaderType == mShaderIndex) // Only apply user shader if it matches the expected material
 			{
-				const UserShaderDesc& usershader = usershaders[index - FIRST_USER_SHADER];
-				if (usershader.shaderType == mShaderIndex) // Only apply user shader if it matches the expected material
+				for (auto &texture : tx->CustomShaderTextures)
 				{
-					for (auto& texture : tx->CustomShaderTextures)
-					{
-						if (texture == nullptr) continue;
-						mTextureLayers.Push({ texture.get(), 0 });	// scalability should be user-definable.
-					}
-					mShaderIndex = index;
+					if (texture == nullptr) continue;
+					mTextureLayers.Push({ texture.get(), 0 });	// scalability should be user-definable.
 				}
+				mShaderIndex = index;
 			}
 		}
 	}

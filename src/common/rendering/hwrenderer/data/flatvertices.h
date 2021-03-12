@@ -2,7 +2,6 @@
 #ifndef _HW__VERTEXBUFFER_H
 #define _HW__VERTEXBUFFER_H
 
-#include "doomdef.h"
 #include "tarray.h"
 #include "hwrenderer/data/buffers.h"
 #include <atomic>
@@ -47,20 +46,13 @@ public:
 	TArray<FFlatVertex> vbo_shadowdata;
 	TArray<uint32_t> ibo_data;
 
-	int mPipelineNbr;
-	int mPipelinePos = 0;
-
-	IVertexBuffer* mVertexBuffer;
-	IVertexBuffer *mVertexBufferPipeline[MAX_PIPELINE_BUFFERS];
+	IVertexBuffer *mVertexBuffer;
 	IIndexBuffer *mIndexBuffer;
-
-	
 
 	unsigned int mIndex;
 	std::atomic<unsigned int> mCurIndex;
 	unsigned int mNumReserved;
 
-	unsigned int mMapStart;
 
 	static const unsigned int BUFFER_SIZE = 2000000;
 	static const unsigned int BUFFER_SIZE_TO_USE = BUFFER_SIZE-500;
@@ -77,7 +69,7 @@ public:
 		NUM_RESERVED = 20
 	};
 
-	FFlatVertexBuffer(int width, int height, int pipelineNbr = 1);
+	FFlatVertexBuffer(int width, int height);
 	~FFlatVertexBuffer();
 
 	void OutputResized(int width, int height);
@@ -104,39 +96,18 @@ public:
 	void Reset()
 	{
 		mCurIndex = mIndex;
-		
-		mPipelinePos++;
-		mPipelinePos %= mPipelineNbr;
-
-		mVertexBuffer = mVertexBufferPipeline[mPipelinePos];
 	}
 
 	void Map()
 	{
-		mMapStart = mCurIndex;
 		mVertexBuffer->Map();
 	}
 
 	void Unmap()
 	{
 		mVertexBuffer->Unmap();
-		mVertexBuffer->Upload(mMapStart * sizeof(FFlatVertex), (mCurIndex - mMapStart) * sizeof(FFlatVertex));
 	}
 
-	void DropSync()
-	{
-		mVertexBuffer->GPUDropSync();
-	}
-
-	void WaitSync()
-	{
-		mVertexBuffer->GPUWaitSync();
-	}
-
-	int GetPipelinePos() 
-	{ 
-		return mPipelinePos; 
-	}
 };
 
 #endif

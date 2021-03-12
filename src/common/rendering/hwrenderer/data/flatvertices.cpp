@@ -45,8 +45,7 @@
 //
 //==========================================================================
 
-FFlatVertexBuffer::FFlatVertexBuffer(int width, int height, int pipelineNbr):
-	mPipelineNbr(pipelineNbr)
+FFlatVertexBuffer::FFlatVertexBuffer(int width, int height)
 {
 	vbo_shadowdata.Resize(NUM_RESERVED);
 
@@ -79,25 +78,17 @@ FFlatVertexBuffer::FFlatVertexBuffer(int width, int height, int pipelineNbr):
 	vbo_shadowdata[18].Set(32767.0f, -32767.0f, 32767.0f, 0, 0);
 	vbo_shadowdata[19].Set(32767.0f, -32767.0f, -32767.0f, 0, 0);
 
+	mVertexBuffer = screen->CreateVertexBuffer();
 	mIndexBuffer = screen->CreateIndexBuffer();
 
+	unsigned int bytesize = BUFFER_SIZE * sizeof(FFlatVertex);
+	mVertexBuffer->SetData(bytesize, nullptr, false);
 
-	for (int n = 0; n < mPipelineNbr; n++)
-	{
-		mVertexBufferPipeline[n] = screen->CreateVertexBuffer();
-
-		unsigned int bytesize = BUFFER_SIZE * sizeof(FFlatVertex);
-		mVertexBufferPipeline[n]->SetData(bytesize, nullptr, false);
-
-		static const FVertexBufferAttribute format[] = {
-			{ 0, VATTR_VERTEX, VFmt_Float3, (int)myoffsetof(FFlatVertex, x) },
-			{ 0, VATTR_TEXCOORD, VFmt_Float2, (int)myoffsetof(FFlatVertex, u) }
-		};
-
-		mVertexBufferPipeline[n]->SetFormat(1, 2, sizeof(FFlatVertex), format);
-	}
-
-	mVertexBuffer = mVertexBufferPipeline[mPipelinePos];
+	static const FVertexBufferAttribute format[] = {
+		{ 0, VATTR_VERTEX, VFmt_Float3, (int)myoffsetof(FFlatVertex, x) },
+		{ 0, VATTR_TEXCOORD, VFmt_Float2, (int)myoffsetof(FFlatVertex, u) }
+	};
+	mVertexBuffer->SetFormat(1, 2, sizeof(FFlatVertex), format);
 
 	mIndex = mCurIndex = NUM_RESERVED;
 	mNumReserved = NUM_RESERVED;
@@ -112,12 +103,8 @@ FFlatVertexBuffer::FFlatVertexBuffer(int width, int height, int pipelineNbr):
 
 FFlatVertexBuffer::~FFlatVertexBuffer()
 {
-	for (int n = 0; n < mPipelineNbr; n++)
-	{
-		delete mVertexBufferPipeline[n];
-	}
-
 	delete mIndexBuffer;
+	delete mVertexBuffer;
 	mIndexBuffer = nullptr;
 	mVertexBuffer = nullptr;
 }
@@ -164,17 +151,8 @@ std::pair<FFlatVertex *, unsigned int> FFlatVertexBuffer::AllocVertices(unsigned
 
 void FFlatVertexBuffer::Copy(int start, int count)
 {
-	IVertexBuffer* old = mVertexBuffer;
-
-	for (int n = 0; n < mPipelineNbr; n++)
-	{
-		mVertexBuffer = mVertexBufferPipeline[n];
-		Map();
-		memcpy(GetBuffer(start), &vbo_shadowdata[0], count * sizeof(FFlatVertex));
-		Unmap();
-		mVertexBuffer->Upload(start * sizeof(FFlatVertex), count * sizeof(FFlatVertex));
-	}
-
-	mVertexBuffer = old;
+	Map();
+	memcpy(GetBuffer(start), &vbo_shadowdata[0], count * sizeof(FFlatVertex));
+	Unmap();
 }
 
