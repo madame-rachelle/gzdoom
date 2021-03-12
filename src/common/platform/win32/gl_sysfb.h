@@ -18,3 +18,8 @@ public:
 protected:
 	int SwapInterval;
 };
+
+class SystemGLESFrameBuffer : public SystemGLFrameBuffer
+{
+
+}

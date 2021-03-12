@@ -110,6 +110,48 @@ SystemGLFrameBuffer::SystemGLFrameBuffer(void *hMonitor, bool fullscreen) : Syst
 // 
 //
 //==========================================================================
+
+SystemGLESFrameBuffer::SystemGLESFrameBuffer(void *hMonitor, bool fullscreen) : SystemBaseFrameBuffer(hMonitor, fullscreen)
+{
+	if (!static_cast<Win32GLESVideo *>(Video)->InitHardware(Window, 0))
+	{
+		I_FatalError("Unable to initialize OpenGL ES");
+		return;
+	}
+
+	HDC hDC = GetDC(Window);
+	const char *wglext = nullptr;
+
+	myWglSwapIntervalExtProc = (PFNWGLSWAPINTERVALEXTPROC)zd_wglGetProcAddress("wglSwapIntervalEXT");
+	auto myWglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)zd_wglGetProcAddress("wglGetExtensionsStringARB");
+	if (myWglGetExtensionsStringARB)
+	{
+		wglext = myWglGetExtensionsStringARB(hDC);
+	}
+	else
+	{
+		auto myWglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)zd_wglGetProcAddress("wglGetExtensionsStringEXT");
+		if (myWglGetExtensionsStringEXT)
+		{
+			wglext = myWglGetExtensionsStringEXT();
+		}
+	}
+	SwapInterval = 1; 
+	if (wglext != nullptr)
+	{
+		if (strstr(wglext, "WGL_EXT_swap_control_tear"))
+		{
+			SwapInterval = -1;
+		}
+	}
+	ReleaseDC(Window, hDC);
+}
+
+//==========================================================================
+//
+// 
+//
+//==========================================================================
 EXTERN_CVAR(Bool, vid_vsync);
 CUSTOM_CVAR(Bool, gl_control_tear, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 {
@@ -119,6 +161,11 @@ CUSTOM_CVAR(Bool, gl_control_tear, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 void SystemGLFrameBuffer::SetVSync (bool vsync)
 {
 	if (myWglSwapIntervalExtProc != NULL) myWglSwapIntervalExtProc(vsync ? (gl_control_tear? SwapInterval : 1) : 0);
+}
+
+void SystemGLESFrameBuffer::SetVSync (bool vsync)
+{
+	// function was removed??
 }
 
 void SystemGLFrameBuffer::SwapBuffers()
