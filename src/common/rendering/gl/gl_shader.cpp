@@ -49,6 +49,8 @@
 #include <map>
 #include <memory>
 
+CVAR(Bool, gl_always_shader_cache, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+
 namespace OpenGLRenderer
 {
 
@@ -70,7 +72,7 @@ bool IsShaderCacheActive()
 	if (firstcall)
 	{
 		const char *vendor = (const char *)glGetString(GL_VENDOR);
-		active = !(strstr(vendor, "Intel") == nullptr);
+		active = !(strstr(vendor, "Intel") == nullptr) || gl_always_shader_cache;
 		firstcall = false;
 	}
 	return active;
