@@ -516,7 +516,7 @@ void MapLoader::InitSectorSpecial(sector_t *sector, int special)
 		break;
 
 	case dSector_DoorCloseIn30:
-		Level->CreateThinker<DDoor>(sector, DDoor::doorWaitClose, 2, 0, 0, 30 * TICRATE);
+		Level->CreateThinker<DDoor>(sector, DDoor::doorWaitClose, 2, 0, 0, 30 * GameTicRate);
 		break;
 			
 	case dDamage_End:
@@ -524,7 +524,7 @@ void MapLoader::InitSectorSpecial(sector_t *sector, int special)
 		break;
 
 	case dSector_DoorRaiseIn5Mins:
-		Level->CreateThinker<DDoor> (sector, DDoor::doorWaitRaise, 2, TICRATE*30/7, 0, 5*60*TICRATE);
+		Level->CreateThinker<DDoor> (sector, DDoor::doorWaitRaise, 2, GameTicRate*30/7, 0, 5*60*GameTicRate);
 		break;
 
 	case dFriction_Low:
@@ -1028,7 +1028,7 @@ void MapLoader::SpawnLights(sector_t *sector)
 {
 	const int STROBEBRIGHT = 5;
 	const int FASTDARK = 15;
-	const int SLOWDARK = TICRATE;
+	const int SLOWDARK = GameTicRate;
 
 	switch (sector->special)
 	{

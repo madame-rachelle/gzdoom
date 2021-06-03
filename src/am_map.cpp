@@ -897,10 +897,7 @@ class DAutomap :public DAutomapBase
 {
 	DECLARE_CLASS(DAutomap, DAutomapBase)
 
-	enum
-	{
-		F_PANINC = 140 / TICRATE,	// how much the automap moves window per tic in frame-buffer coordinates moves 140 pixels at 320x200 in 1 second
-	};
+	float am_panning_increment = 140 / (float)GameTicRate;	// how much the automap moves window per tic in frame-buffer coordinates moves 140 pixels at 320x200 in 1 second
 
 	//FLevelLocals *Level;
 	// scale on entry
@@ -3177,13 +3174,13 @@ void DAutomap::Drawer (int bottom)
 	{
 		m_paninc.x = m_paninc.y = 0;
 		if (buttonMap.ButtonDown(Button_AM_PanLeft))
-			m_paninc.x -= FTOM(F_PANINC) * delta * TICRATE;
+			m_paninc.x -= FTOM(am_panning_increment) * delta * GameTicRate;
 		if (buttonMap.ButtonDown(Button_AM_PanRight))
-			m_paninc.x += FTOM(F_PANINC) * delta * TICRATE;
+			m_paninc.x += FTOM(am_panning_increment) * delta * GameTicRate;
 		if (buttonMap.ButtonDown(Button_AM_PanUp))
-			m_paninc.y += FTOM(F_PANINC) * delta * TICRATE;
+			m_paninc.y += FTOM(am_panning_increment) * delta * GameTicRate;
 		if (buttonMap.ButtonDown(Button_AM_PanDown))
-			m_paninc.y -= FTOM(F_PANINC) * delta * TICRATE;
+			m_paninc.y -= FTOM(am_panning_increment) * delta * GameTicRate;
 	}
 
 	// Change the zoom if necessary

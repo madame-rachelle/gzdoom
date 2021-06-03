@@ -170,7 +170,7 @@ void DEarthquake::Tick ()
 double DEarthquake::GetModWave(double ticFrac, double waveMultiplier) const
 {
 	double time = m_Countdown - ticFrac;
-	return g_sin(waveMultiplier * time * (M_PI * 2 / TICRATE));
+	return g_sin(waveMultiplier * time * (M_PI * 2 / GameTicRate));
 }
 
 //==========================================================================

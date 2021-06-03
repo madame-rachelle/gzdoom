@@ -529,7 +529,7 @@ CCMD (select)
 			user->PointerVar<AActor>(NAME_InvSel) = item;
 		}
 	}
-	user->player->inventorytics = 5*TICRATE;
+	user->player->inventorytics = 5*GameTicRate;
 }
 
 static inline int joyint(double val)
@@ -2089,7 +2089,7 @@ void G_DoLoadGame ()
 		("leveltime", time[1])
 		("globalfreeze", globalfreeze);
 	// dearchive all the modifications
-	level.time = Scale(time[1], TICRATE, time[0]);
+	level.time = Scale(time[1], GameTicRate, time[0]);
 
 	G_ReadSnapshots(resfile.get());
 	resfile.reset(nullptr);	// we no longer need the resource file below this point
@@ -2294,7 +2294,7 @@ static void PutSaveComment (FSerializer &arc)
 
 	// Append elapsed time
 	const char *const time = GStrings("SAVECOMMENT_TIME");
-	levelTime = primaryLevel->time / TICRATE;
+	levelTime = primaryLevel->time / GameTicRate;
 	comment.AppendFormat("%s: %02d:%02d:%02d", time, levelTime/3600, (levelTime%3600)/60, levelTime%60);
 
 	// Write out the comment
@@ -2396,7 +2396,7 @@ void G_DoSaveGame (bool okForQuicksave, bool forceQuicksave, FString filename, c
 
 	if (level.time != 0 || level.maptime != 0)
 	{
-		int tic = TICRATE;
+		int tic = GameTicRate;
 		savegameglobals("ticrate", tic);
 		savegameglobals("leveltime", level.time);
 	}
@@ -3005,7 +3005,7 @@ bool G_CheckDemoStatus (void)
 				// right now.
 				I_FatalError ("timed %i gametics in %i realtics (%.1f fps)\n"
 							  "(This is not really an error.)", gametic,
-							  endtime, (float)gametic/(float)endtime*(float)TICRATE);
+							  endtime, (float)gametic/(float)endtime*(float)GameTicRate);
 			}
 			else
 			{

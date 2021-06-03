@@ -116,7 +116,7 @@ bool FIntermissionAction::ParseKey(FScanner &sc)
 		if (!sc.CheckToken('-'))
 		{
 			sc.MustGetFloat();
-			mDuration = int(sc.Float*TICRATE);
+			mDuration = int(sc.Float*GameTicRate);
 		}
 		else
 		{
@@ -359,7 +359,7 @@ bool FIntermissionActionTextscreen::ParseKey(FScanner &sc)
 		if (!sc.CheckToken('-'))
 		{
 			sc.MustGetFloat();
-			mTextDelay = int(sc.Float*TICRATE);
+			mTextDelay = int(sc.Float*GameTicRate);
 		}
 		else
 		{
@@ -468,7 +468,7 @@ bool FIntermissionActionScroller::ParseKey(FScanner &sc)
 		if (!sc.CheckToken('-'))
 		{
 			sc.MustGetFloat();
-			mScrollDelay = int(sc.Float*TICRATE);
+			mScrollDelay = int(sc.Float*GameTicRate);
 		}
 		else
 		{
@@ -483,7 +483,7 @@ bool FIntermissionActionScroller::ParseKey(FScanner &sc)
 		if (!sc.CheckToken('-'))
 		{
 			sc.MustGetFloat();
-			mScrollTime = int(sc.Float*TICRATE);
+			mScrollTime = int(sc.Float*GameTicRate);
 		}
 		else
 		{

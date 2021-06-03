@@ -1,7 +1,7 @@
 #ifndef __A_MORPH__
 #define __A_MORPH__
 
-#define MORPHTICS (40*TICRATE)
+#define MORPHTICS (40*GameTicRate)
 #define MAXMORPHHEALTH 30
 
 // Morph style states how morphing affects health and

@@ -1308,7 +1308,7 @@ DEFINE_CLASS_PROPERTY_PREFIX(powerup, duration, I, Inventory)
 	}
 
 	PROP_INT_PARM(i, 0);
-	defaults->IntVar(NAME_EffectTics) = (i >= 0) ? i : -i * TICRATE;
+	defaults->IntVar(NAME_EffectTics) = (i >= 0) ? i : -i * GameTicRate;
 }
 
 //==========================================================================
@@ -1726,7 +1726,7 @@ DEFINE_CLASS_PROPERTY(monsterclass, S, MorphProjectile)
 DEFINE_CLASS_PROPERTY(duration, I, MorphProjectile)
 {
 	PROP_INT_PARM(i, 0);
-	defaults->IntVar(NAME_Duration) = i >= 0 ? i : -i*TICRATE;
+	defaults->IntVar(NAME_Duration) = i >= 0 ? i : -i*GameTicRate;
 }
 
 //==========================================================================

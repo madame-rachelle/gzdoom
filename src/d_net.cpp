@@ -2003,7 +2003,7 @@ void Net_CheckLastReceived (int counts)
 {
 	// [Ed850] Check to see the last time a packet was received.
 	// If it's longer then 3 seconds, a node has likely stalled.
-	if (I_GetTime() - lastglobalrecvtime >= TICRATE * 3)
+	if (I_GetTime() - lastglobalrecvtime >= GameTicRate * 3)
 	{
 		lastglobalrecvtime = I_GetTime(); //Bump the count
 
@@ -2909,8 +2909,8 @@ int Net_GetLatency(int *ld, int *ad)
 
 	for (i = 0; i < BACKUPTICS; i++) localdelay += netdelay[0][i];
 	for (i = 0; i < BACKUPTICS; i++) arbitratordelay += netdelay[nodeforplayer[Net_Arbitrator]][i];
-	arbitratordelay = ((arbitratordelay / BACKUPTICS) * ticdup) * (1000 / TICRATE);
-	localdelay = ((localdelay / BACKUPTICS) * ticdup) * (1000 / TICRATE);
+	arbitratordelay = ((arbitratordelay / BACKUPTICS) * ticdup) * (1000 / GameTicRate);
+	localdelay = ((localdelay / BACKUPTICS) * ticdup) * (1000 / GameTicRate);
 	int severity = 0;
 
 	if (MAX(localdelay, arbitratordelay) > 200)
@@ -2921,7 +2921,7 @@ int Net_GetLatency(int *ld, int *ad)
 	{
 		severity = 2;
 	}
-	if (MAX(localdelay, arbitratordelay) >= ((BACKUPTICS / 2 - 1) * ticdup) * (1000 / TICRATE))
+	if (MAX(localdelay, arbitratordelay) >= ((BACKUPTICS / 2 - 1) * ticdup) * (1000 / GameTicRate))
 	{
 		severity = 3;
 	}

@@ -1099,9 +1099,9 @@ void DoomSoundEngine::CalcPosVel(int type, const void* source, const float pt[3]
 					*pos = { (float)posi.X, (float)posi.Z, (float)posi.Y };
 					if (vel)
 					{
-						vel->X = float(actor->Vel.X * TICRATE);
-						vel->Y = float(actor->Vel.Z * TICRATE);
-						vel->Z = float(actor->Vel.Y * TICRATE);
+						vel->X = float(actor->Vel.X * GameTicRate);
+						vel->Y = float(actor->Vel.Z * GameTicRate);
+						vel->Z = float(actor->Vel.Y * GameTicRate);
 					}
 				}
 				break;
@@ -1200,7 +1200,7 @@ bool DoomSoundEngine::ValidatePosVel(int sourcetype, const void* source, const F
 	const bool valid = Validate(pos, POSITION_LIMIT, "position", actor);
 
 	// The maximum velocity is enough to travel through entire map in one tic
-	static const float VELOCITY_LIMIT = 2 * POSITION_LIMIT * TICRATE;
+	static const float VELOCITY_LIMIT = 2 * POSITION_LIMIT * GameTicRate;
 	return Validate(vel, VELOCITY_LIMIT, "velocity", actor) && valid;
 }
 

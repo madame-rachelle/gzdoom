@@ -43,8 +43,8 @@
 #define MAXMOVEHEIGHT (32) //MAXSTEPMOVE but with jumping counted in.
 #define GETINCOMBAT (35000000/65536.) //Max distance to item. if it's due to be icked up in a combat situation.
 #define SHOOTFOV	(60.)
-#define AFTERTICS   (2*TICRATE) //Seconds that bot will be alert on an recent enemy. Ie not looking the other way
-#define MAXROAM		(4*TICRATE) //When this time is elapsed the bot will roam after something else.
+#define AFTERTICS   (2*GameTicRate) //Seconds that bot will be alert on an recent enemy. Ie not looking the other way
+#define MAXROAM		(4*GameTicRate) //When this time is elapsed the bot will roam after something else.
 //monster mod
 #define MSPAWN_DELAY 20//Tics between each spawn.
 #define MMAXSELECT   100 //Maximum number of monsters that can be selected at a time.

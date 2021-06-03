@@ -376,17 +376,17 @@ static void HU_DrawTimeRemaining (int y)
 	if (deathmatch && timelimit && gamestate == GS_LEVEL)
 	{
 		char str[80];
-		int timeleft = (int)(timelimit * TICRATE * 60) - primaryLevel->maptime;
+		int timeleft = (int)(timelimit * GameTicRate * 60) - primaryLevel->maptime;
 		int hours, minutes, seconds;
 
 		if (timeleft < 0)
 			timeleft = 0;
 
-		hours = timeleft / (TICRATE * 3600);
-		timeleft -= hours * TICRATE * 3600;
-		minutes = timeleft / (TICRATE * 60);
-		timeleft -= minutes * TICRATE * 60;
-		seconds = timeleft / TICRATE;
+		hours = timeleft / (GameTicRate * 3600);
+		timeleft -= hours * GameTicRate * 3600;
+		minutes = timeleft / (GameTicRate * 60);
+		timeleft -= minutes * GameTicRate * 60;
+		seconds = timeleft / GameTicRate;
 
 		if (hours)
 			mysnprintf (str, countof(str), "Level ends in %d:%02d:%02d", hours, minutes, seconds);
@@ -445,7 +445,7 @@ static void HU_DrawPlayer (player_t *player, bool highlight, int col1, int col2,
 	}
 	avgdelay /= BACKUPTICS;
 
-	mysnprintf(str, countof(str), "%d", (avgdelay * ticdup) * (1000 / TICRATE));
+	mysnprintf(str, countof(str), "%d", (avgdelay * ticdup) * (1000 / GameTicRate));
 
 	HU_DrawFontScaled(col5, y + ypadding, color, str);
 

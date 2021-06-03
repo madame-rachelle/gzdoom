@@ -507,7 +507,7 @@ void AActor::Die (AActor *source, AActor *inflictor, int dmgflags, FName MeansOf
 				source->player->multicount++;
 				if (source->player->lastkilltime > 0)
 				{
-					if (source->player->lastkilltime < Level->time - 3*TICRATE)
+					if (source->player->lastkilltime < Level->time - 3*GameTicRate)
 					{
 						source->player->multicount = 1;
 					}
@@ -581,13 +581,13 @@ void AActor::Die (AActor *source, AActor *inflictor, int dmgflags, FName MeansOf
 		Level->Behaviors.StartTypedScripts (SCRIPT_Death, this, true);
 
 		// [RH] Force a delay between death and respawn
-		player->respawn_time = Level->time + TICRATE;
+		player->respawn_time = Level->time + GameTicRate;
 
 		//Added by MC: Respawn bots
 		if (Level->BotInfo.botnum && !demoplayback)
 		{
 			if (player->Bot != NULL)
-				player->Bot->t_respawn = (pr_botrespawn()%15)+((Level->BotInfo.botnum-1)*2)+TICRATE+1;
+				player->Bot->t_respawn = (pr_botrespawn()%15)+((Level->BotInfo.botnum-1)*2)+GameTicRate+1;
 
 			//Added by MC: Discard enemies.
 			for (int i = 0; i < MAXPLAYERS; i++)

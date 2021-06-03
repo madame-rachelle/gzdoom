@@ -996,7 +996,6 @@ CCMD(undocolorpic)
 	}
 }
 
-
 DEFINE_GLOBAL(menuactive)
 DEFINE_GLOBAL(BackbuttonTime)
 DEFINE_GLOBAL(BackbuttonAlpha)

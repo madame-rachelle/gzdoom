@@ -137,7 +137,7 @@ void FLightDefaults::ApplyProperties(FDynamicLight * light) const
 	light->m_tickCount = 0;
 	if (m_type == PulseLight)
 	{
-		float pulseTime = float(m_Param / TICRATE);
+		float pulseTime = float(m_Param / GameTicRate);
 
 		light->m_lastUpdate = light->Level->maptime;
 		if (m_swapped) light->m_cycler.SetParams(float(m_Args[LIGHT_SECONDARY_INTENSITY]), float(m_Args[LIGHT_INTENSITY]), pulseTime, oldtype == PulseLight);

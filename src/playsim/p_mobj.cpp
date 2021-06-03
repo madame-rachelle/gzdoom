@@ -1479,7 +1479,7 @@ void P_ExplodeMissile (AActor *mo, line_t *line, AActor *target, bool onsky, FNa
 
 		if (mo->flags4 & MF4_RANDOMIZE)
 		{
-			mo->tics -= (pr_explodemissile() & 3) * TICRATE / 35;
+			mo->tics -= (pr_explodemissile() & 3) * GameTicRate / 35;
 			if (mo->tics < 1)
 				mo->tics = 1;
 		}
@@ -3742,7 +3742,7 @@ void AActor::Tick ()
 			RenderStyle.Flags &= ~STYLEF_Alpha1;
 			if (visdir > 0)
 			{
-				Alpha += 2./TICRATE;
+				Alpha += 2./GameTicRate;
 				if (Alpha > 1.)
 				{
 					Alpha = 1.;
@@ -3751,7 +3751,7 @@ void AActor::Tick ()
 			}
 			else if (visdir < 0)
 			{
-				Alpha -= 1.5/TICRATE;
+				Alpha -= 1.5/GameTicRate;
 				if (Alpha < StealthAlpha)
 				{
 					Alpha = StealthAlpha;
@@ -4029,7 +4029,7 @@ void AActor::Tick ()
 						if (player == NULL || !(player->cheats & CF_PREDICTING))
 						{
 							if (P_ActivateThingSpecial(onmo, this))
-								onmo->lastbump = Level->maptime + TICRATE;
+								onmo->lastbump = Level->maptime + GameTicRate;
 						}
 					}
 					if (Vel.Z != 0 && (BounceFlags & BOUNCE_Actors))
@@ -4077,7 +4077,7 @@ void AActor::Tick ()
 		}
 
 		// Check for poison damage, but only once per PoisonPeriod tics (or once per second if none).
-		if (PoisonDurationReceived && (Level->time % (PoisonPeriodReceived ? PoisonPeriodReceived : TICRATE) == 0))
+		if (PoisonDurationReceived && (Level->time % (PoisonPeriodReceived ? PoisonPeriodReceived : GameTicRate) == 0))
 		{
 			P_DamageMobj(this, NULL, Poisoner, PoisonDamageReceived, PoisonDamageTypeReceived != NAME_None ? PoisonDamageTypeReceived : (FName)NAME_Poison, 0);
 

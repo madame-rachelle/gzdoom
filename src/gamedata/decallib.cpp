@@ -586,12 +586,12 @@ void FDecalLib::ParseFader (FScanner &sc)
 		else if (sc.Compare ("DecayStart"))
 		{
 			sc.MustGetFloat ();
-			startTime = (int)(sc.Float * TICRATE);
+			startTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("DecayTime"))
 		{
 			sc.MustGetFloat ();
-			decayTime = (int)(sc.Float * TICRATE);
+			decayTime = (int)(sc.Float * GameTicRate);
 		}
 		else
 		{
@@ -629,12 +629,12 @@ void FDecalLib::ParseStretcher (FScanner &sc)
 		else if (sc.Compare ("StretchStart"))
 		{
 			sc.MustGetFloat ();
-			startTime = (int)(sc.Float * TICRATE);
+			startTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("StretchTime"))
 		{
 			sc.MustGetFloat ();
-			takeTime = (int)(sc.Float * TICRATE);
+			takeTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("GoalX"))
 		{
@@ -680,12 +680,12 @@ void FDecalLib::ParseSlider (FScanner &sc)
 		else if (sc.Compare ("SlideStart"))
 		{
 			sc.MustGetFloat ();
-			startTime = (int)(sc.Float * TICRATE);
+			startTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("SlideTime"))
 		{
 			sc.MustGetFloat ();
-			takeTime = (int)(sc.Float * TICRATE);
+			takeTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("DistX"))
 		{
@@ -729,12 +729,12 @@ void FDecalLib::ParseColorchanger (FScanner &sc)
 		else if (sc.Compare ("FadeStart"))
 		{
 			sc.MustGetFloat ();
-			startTime = (int)(sc.Float * TICRATE);
+			startTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("FadeTime"))
 		{
 			sc.MustGetFloat ();
-			decayTime = (int)(sc.Float * TICRATE);
+			decayTime = (int)(sc.Float * GameTicRate);
 		}
 		else if (sc.Compare ("Color"))
 		{

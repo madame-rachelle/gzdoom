@@ -1857,7 +1857,7 @@ DEFINE_ACTION_FUNCTION(AActor, A_SetBlend)
 
 	self->Level->CreateThinker<DFlashFader>(color.r/255.f, color.g/255.f, color.b/255.f, float(alpha),
 					color2.r/255.f, color2.g/255.f, color2.b/255.f, float(alpha2),
-					float(tics)/TICRATE, self, true);
+					float(tics)/GameTicRate, self, true);
 	return 0;
 }
 

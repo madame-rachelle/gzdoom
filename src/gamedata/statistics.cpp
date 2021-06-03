@@ -147,7 +147,7 @@ static void ParseStatistics(const char *fn, TArray<FStatistics> &statlist)
 				int h,m,s;
 				sc.MustGetString();
 				sscanf(sc.String, "%d:%d:%d", &h, &m, &s);
-				session.timeneeded= ((((h*60)+m)*60)+s)*TICRATE;
+				session.timeneeded= ((((h*60)+m)*60)+s)*GameTicRate;
 
 				sc.MustGetNumber();
 				session.skill=sc.Number;
@@ -165,7 +165,7 @@ static void ParseStatistics(const char *fn, TArray<FStatistics> &statlist)
 						int h,m,s;
 						sc.MustGetString();
 						sscanf(sc.String, "%d:%d:%d", &h, &m, &s);
-						lstats.timeneeded= ((((h*60)+m)*60)+s)*TICRATE;
+						lstats.timeneeded= ((((h*60)+m)*60)+s)*GameTicRate;
 
 						lstats.skill = 0;
 					}
@@ -231,9 +231,9 @@ int compare_dates(const void *a, const void *b)
 //
 // ====================================================================
 
-inline int hours(int v) { return v / (60*60*TICRATE); }
-inline int minutes(int v) { return (v % (60*60*TICRATE)) / (60*TICRATE); }
-inline int seconds(int v) { return (v % (60*TICRATE))/TICRATE; }
+inline int hours(int v) { return v / (60*60*GameTicRate); }
+inline int minutes(int v) { return (v % (60*60*GameTicRate)) / (60*GameTicRate); }
+inline int seconds(int v) { return (v % (60*GameTicRate))/GameTicRate; }
 
 static void SaveStatistics(const char *fn, TArray<FStatistics> &statlist)
 {
@@ -575,7 +575,7 @@ FString GetStatString()
 		OneLevel *l = &LevelData[i];
 		compose.AppendFormat("Level %s - Kills: %d/%d - Items: %d/%d - Secrets: %d/%d - Time: %d:%02d\n", 
 			l->Levelname.GetChars(), l->killcount, l->totalkills, l->itemcount, l->totalitems, l->secretcount, l->totalsecrets,
-			l->leveltime/(60*TICRATE), (l->leveltime/TICRATE)%60);
+			l->leveltime/(60*GameTicRate), (l->leveltime/GameTicRate)%60);
 	}
 	return compose;
 }

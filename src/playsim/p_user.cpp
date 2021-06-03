@@ -454,7 +454,7 @@ void player_t::SetSubtitle(int num, FSoundID soundid)
 	{
 		SubtitleText = lumpname;
 		int sl = soundid == 0 ? 7000 : std::max<int>(7000, S_GetMSLength(soundid));
-		SubtitleCounter = sl * TICRATE / 1000;
+		SubtitleCounter = sl * GameTicRate / 1000;
 	}
 }
 

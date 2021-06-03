@@ -46,7 +46,6 @@
 static uint64_t FirstFrameStartTime;
 static uint64_t CurrentFrameStartTime;
 static uint64_t FreezeTime;
-int GameTicRate = 35;	// make sure it is not 0, even if the client doesn't set it.
 
 double TimeScale = 1.0;
 

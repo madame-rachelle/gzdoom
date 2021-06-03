@@ -723,10 +723,10 @@ void SBarInfo::ParseSBarInfo(int lump)
 						popup.transition = Popup::TRANSITION_FADE;
 						sc.MustGetToken(',');
 						sc.MustGetToken(TK_FloatConst);
-						popup.speed = 1.0 / (TICRATE * sc.Float);
+						popup.speed = 1.0 / (GameTicRate * sc.Float);
 						sc.MustGetToken(',');
 						sc.MustGetToken(TK_FloatConst);
-						popup.speed2 = 1.0 / (TICRATE * sc.Float);
+						popup.speed2 = 1.0 / (GameTicRate * sc.Float);
 					}
 					else
 						sc.ScriptError("Unkown transition type: '%s'", sc.String);

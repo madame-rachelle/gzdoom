@@ -163,7 +163,7 @@ void FMapInfoParser::ParseSkill ()
 		{
 			ParseAssign();
 			sc.MustGetFloat ();
-			skill.RespawnCounter = int(sc.Float*TICRATE);
+			skill.RespawnCounter = int(sc.Float*GameTicRate);
 		}
 		else if (sc.Compare("respawnlimit"))
 		{
@@ -371,7 +371,7 @@ int G_SkillProperty(ESkillProperty prop)
 
 		case SKILLP_Respawn:
 			if (dmflags & DF_MONSTERS_RESPAWN && AllSkills[gameskill].RespawnCounter==0) 
-				return TICRATE * gameinfo.defaultrespawntime;
+				return GameTicRate * gameinfo.defaultrespawntime;
 			return AllSkills[gameskill].RespawnCounter;
 
 		case SKILLP_RespawnLimit:

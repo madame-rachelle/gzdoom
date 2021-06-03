@@ -695,7 +695,7 @@ void P_DrawRailTrail(AActor *source, TArray<SPortalHit> &portalhits, int color1,
 			if (!p)
 				return;
 
-			int spiralduration = (duration == 0) ? TICRATE : duration;
+			int spiralduration = (duration == 0) ? GameTicRate : duration;
 
 			p->alpha = 1.f;
 			p->ttl = spiralduration;
@@ -880,7 +880,7 @@ void P_DisconnectEffect (AActor *actor)
 
 	for (i = 64; i; i--)
 	{
-		particle_t *p = JitterParticle (actor->Level, TICRATE*2);
+		particle_t *p = JitterParticle (actor->Level, GameTicRate*2);
 
 		if (!p)
 			break;

@@ -323,6 +323,7 @@ cycle_t FrameCycles;
 // [SP] Store the capabilities of the renderer in a global variable, to prevent excessive per-frame processing
 uint32_t r_renderercaps = 0;
 
+int GameTicRate = 35;
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
@@ -1395,7 +1396,7 @@ void D_DoStrifeAdvanceDemo ()
 	{
 	default:
 	case 0:
-		pagetic = 6 * TICRATE;
+		pagetic = 6 * GameTicRate;
 		pagename = "TITLEPIC";
 		if (fileSystem.CheckNumForName ("d_logo", ns_music) < 0)
 		{ // strife0.wad does not have d_logo
@@ -1411,19 +1412,19 @@ void D_DoStrifeAdvanceDemo ()
 	case 1:
 		// [RH] Strife fades to black and then to the Rogue logo, but
 		// I think it looks better if it doesn't fade.
-		pagetic = 10 * TICRATE/35;
+		pagetic = 10 * GameTicRate/35;
 		pagename = "";	// PANEL0, but strife0.wad doesn't have it, so don't use it.
 		PageBlank = true;
 		S_Sound (CHAN_VOICE, CHANF_UI, "bishop/active", 1, ATTN_NORM);
 		break;
 
 	case 2:
-		pagetic = 4 * TICRATE;
+		pagetic = 4 * GameTicRate;
 		pagename = "RGELOGO";
 		break;
 
 	case 3:
-		pagetic = 7 * TICRATE;
+		pagetic = 7 * GameTicRate;
 		pagename = "PANEL1";
 		subtitle = "TXT_SUB_INTRO1";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[0], 1, ATTN_NORM);
@@ -1434,48 +1435,48 @@ void D_DoStrifeAdvanceDemo ()
 		break;
 
 	case 4:
-		pagetic = 9 * TICRATE;
+		pagetic = 9 * GameTicRate;
 		pagename = "PANEL2";
 		subtitle = "TXT_SUB_INTRO2";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[1], 1, ATTN_NORM);
 		break;
 
 	case 5:
-		pagetic = 12 * TICRATE;
+		pagetic = 12 * GameTicRate;
 		pagename = "PANEL3";
 		subtitle = "TXT_SUB_INTRO3";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[2], 1, ATTN_NORM);
 		break;
 
 	case 6:
-		pagetic = 11 * TICRATE;
+		pagetic = 11 * GameTicRate;
 		pagename = "PANEL4";
 		subtitle = "TXT_SUB_INTRO4";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[3], 1, ATTN_NORM);
 		break;
 
 	case 7:
-		pagetic = 10 * TICRATE;
+		pagetic = 10 * GameTicRate;
 		pagename = "PANEL5";
 		subtitle = "TXT_SUB_INTRO5";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[4], 1, ATTN_NORM);
 		break;
 
 	case 8:
-		pagetic = 16 * TICRATE;
+		pagetic = 16 * GameTicRate;
 		pagename = "PANEL6";
 		subtitle = "TXT_SUB_INTRO6";
 		S_Sound (CHAN_VOICE, CHANF_UI, voices[5], 1, ATTN_NORM);
 		break;
 
 	case 9:
-		pagetic = 6 * TICRATE;
+		pagetic = 6 * GameTicRate;
 		pagename = "vellogo";
 		wipegamestate = GS_FORCEWIPEFADE;
 		break;
 
 	case 10:
-		pagetic = 12 * TICRATE;
+		pagetic = 12 * GameTicRate;
 		pagename = "CREDIT";
 		wipegamestate = GS_FORCEWIPEFADE;
 		break;
@@ -1542,7 +1543,7 @@ void D_DoAdvanceDemo (void)
 		{
 			Advisory = TexMan.GetGameTextureByName("ADVISOR");
 			demosequence = 1;
-			pagetic = (int)(gameinfo.advisoryTime * TICRATE);
+			pagetic = (int)(gameinfo.advisoryTime * GameTicRate);
 			break;
 		}
 		// fall through to case 1 if no advisory notice
@@ -1574,7 +1575,7 @@ void D_DoAdvanceDemo (void)
 	case 0:
 		gamestate = GS_DEMOSCREEN;
 		pagename = gameinfo.TitlePage;
-		pagetic = (int)(gameinfo.titleTime * TICRATE);
+		pagetic = (int)(gameinfo.titleTime * GameTicRate);
 		if (!playedtitlemusic) S_ChangeMusic (gameinfo.titleMusic, gameinfo.titleOrder, false);
 		playedtitlemusic = true;
 		demosequence = 3;
@@ -1583,7 +1584,7 @@ void D_DoAdvanceDemo (void)
 		break;
 
 	case 2:
-		pagetic = (int)(gameinfo.pageTime * TICRATE);
+		pagetic = (int)(gameinfo.pageTime * GameTicRate);
 		gamestate = GS_DEMOSCREEN;
 		if (gameinfo.creditPages.Size() > 0)
 		{
@@ -2146,6 +2147,13 @@ static void CheckCmdLine()
 	const char *v;
 
 	if (!batchrun) Printf ("Checking cmd-line parameters...\n");
+
+	const char *getticrate = Args->CheckValue ("-ticrate");
+	if (getticrate)
+	{
+		GameTicRate = atoi(getticrate);
+	}
+
 	if (Args->CheckParm ("-nomonsters"))	flags |= DF_NO_MONSTERS;
 	if (Args->CheckParm ("-respawn"))		flags |= DF_MONSTERS_RESPAWN;
 	if (Args->CheckParm ("-fast"))			flags |= DF_FAST_MONSTERS;
@@ -3614,7 +3622,7 @@ static int D_DoomMain_Internal (void)
 							// Do not do any screenwipes when autostarting a game.
 							if (!Args->CheckParm("-warpwipe"))
 							{
-								NoWipe = TICRATE;
+								NoWipe = GameTicRate;
 							}
 							CheckWarpTransMap(startmap, true);
 							if (demorecording)
@@ -3665,7 +3673,6 @@ static int D_DoomMain_Internal (void)
 int GameMain()
 {
 	int ret = 0;
-	GameTicRate = TICRATE;
 
 	ConsoleCallbacks cb = {
 		D_UserInfoChanged,
@@ -3881,4 +3888,16 @@ void I_UpdateWindowTitle()
 	}
 	*dstp = 0;
 	I_SetWindowTitle(copy.Data());
+}
+
+UNSAFE_CCMD(ticrate)
+{
+	if (argv.argc() > 1)
+	{
+		I_FreezeTime(true);
+		GameTicRate = atoi(argv[1]);
+		I_FreezeTime(false);
+	}
+
+	Printf("Global Tic Rate: %i", GameTicRate);
 }

@@ -226,7 +226,7 @@ void FDynamicLight::Activate()
 
 	if (lighttype == PulseLight)
 	{
-		float pulseTime = float(specialf1 / TICRATE);
+		float pulseTime = float(specialf1 / GameTicRate);
 
 		m_lastUpdate = Level->maptime;
 		if (!swapped) m_cycler.SetParams(float(GetSecondaryIntensity()), float(GetIntensity()), pulseTime);
@@ -277,7 +277,7 @@ void FDynamicLight::Tick()
 	{
 	case PulseLight:
 	{
-		float diff = (Level->maptime - m_lastUpdate) / (float)TICRATE;
+		float diff = (Level->maptime - m_lastUpdate) / (float)GameTicRate;
 		
 		m_lastUpdate = Level->maptime;
 		m_cycler.Update(diff);
@@ -882,7 +882,7 @@ int AttachLightDirect(AActor *self, int _lightid, int type, int color, int radiu
 	userlight->SetFlags(LightFlags::FromInt(flags));
 	float of[] = { float(ofs_x), float(ofs_z), float(ofs_y)};
 	userlight->SetOffset(of);
-	userlight->SetParameter(type == PulseLight? param*TICRATE : param*360.);
+	userlight->SetParameter(type == PulseLight? param*GameTicRate : param*360.);
 	userlight->SetSpotInnerAngle(spoti);
 	userlight->SetSpotOuterAngle(spoto);
 	if (spotp >= -90. && spotp <= 90.)

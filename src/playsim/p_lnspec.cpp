@@ -76,8 +76,8 @@ static const uint8_t ChangeMap[8] = { 0, 1, 5, 3, 7, 2, 6, 0 };
 	int arg0, int arg1, int arg2, int arg3, int arg4)
 
 #define SPEED(a)		((a) / 8.)
-#define TICS(a)			(((a)*TICRATE)/35)
-#define OCTICS(a)		(((a)*TICRATE)/8)
+#define TICS(a)			(((a)*GameTicRate)/35)
+#define OCTICS(a)		(((a)*GameTicRate)/8)
 #define BYTEANGLE(a)	((a) * (360./256.))
 #define CRUSH(a)		((a) > 0? (a) : -1)
 #define CHANGE(a)		(((a) >= 0 && (a)<=7)? ChangeMap[a]:0)
@@ -1847,7 +1847,7 @@ FUNC(LS_Thing_SetGoal)
 			}
 			if (self->target == NULL)
 			{
-				self->reactiontime = arg2 * TICRATE;
+				self->reactiontime = arg2 * GameTicRate;
 			}
 		}
 	}

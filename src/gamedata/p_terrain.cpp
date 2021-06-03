@@ -599,7 +599,7 @@ static void GenericParse (FScanner &sc, FGenericParse *parser, const char **keyw
 
 		case GEN_Time:
 			sc.MustGetFloat ();
-			SET_FIELD (int, (int)(sc.Float * TICRATE));
+			SET_FIELD (int, (int)(sc.Float * GameTicRate));
 			break;
 
 		case GEN_Bool:

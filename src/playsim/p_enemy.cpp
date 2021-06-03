@@ -1766,7 +1766,7 @@ DEFINE_ACTION_FUNCTION(AActor, A_Look)
 		auto iterator = self->Level->GetActorIterator(NAME_PatrolPoint, self->args[1]);
 		self->special = 0;
 		self->goal = iterator.Next ();
-		self->reactiontime = self->args[2] * TICRATE + self->Level->maptime;
+		self->reactiontime = self->args[2] * GameTicRate + self->Level->maptime;
 		if (self->args[3] == 0) self->flags5 &= ~MF5_CHASEGOAL;
 		else self->flags5 |= MF5_CHASEGOAL;
 	}
@@ -1895,7 +1895,7 @@ DEFINE_ACTION_FUNCTION(AActor, A_LookEx)
 		auto iterator = self->Level->GetActorIterator(NAME_PatrolPoint, self->args[1]);
 		self->special = 0;
 		self->goal = iterator.Next ();
-		self->reactiontime = self->args[2] * TICRATE + self->Level->maptime;
+		self->reactiontime = self->args[2] * GameTicRate + self->Level->maptime;
 		if (self->args[3] == 0)
 			self->flags5 &= ~MF5_CHASEGOAL;
 		else
@@ -2393,7 +2393,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			if (newgoal != NULL && actor->goal == actor->target)
 			{
 				delay = newgoal->args[1];
-				actor->reactiontime = delay * TICRATE + actor->Level->maptime;
+				actor->reactiontime = delay * GameTicRate + actor->Level->maptime;
 			}
 			else
 			{

@@ -54,7 +54,7 @@ void DFlashFader::Construct (float r1, float g1, float b1, float a1,
 						  float r2, float g2, float b2, float a2,
 						  float time, AActor *who, bool terminate)
 {
-	TotalTics = (int)(time*TICRATE);
+	TotalTics = (int)(time*GameTicRate);
 	RemainingTics = TotalTics;
 	ForWho = who;
 	Blends[0][0]=r1; Blends[0][1]=g1; Blends[0][2]=b1; Blends[0][3]=a1;

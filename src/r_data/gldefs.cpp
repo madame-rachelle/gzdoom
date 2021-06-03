@@ -543,7 +543,7 @@ class GLDefsParser
 					break;
 				case LIGHTTAG_INTERVAL:
 					floatVal = ParseFloat(sc);
-					defaults->SetParameter(floatVal * TICRATE);
+					defaults->SetParameter(floatVal * GameTicRate);
 					break;
 				case LIGHTTAG_SUBTRACTIVE:
 					defaults->SetSubtractive(ParseInt(sc) != 0);

@@ -883,15 +883,15 @@ static void S_AddSNDINFO (int lump)
 				{
 					ambient->type |= RANDOM;
 					sc.MustGetFloat ();
-					ambient->periodmin = (int)(sc.Float * TICRATE);
+					ambient->periodmin = (int)(sc.Float * GameTicRate);
 					sc.MustGetFloat ();
-					ambient->periodmax = (int)(sc.Float * TICRATE);
+					ambient->periodmax = (int)(sc.Float * GameTicRate);
 				}
 				else if (sc.Compare ("periodic"))
 				{
 					ambient->type |= PERIODIC;
 					sc.MustGetFloat ();
-					ambient->periodmin = (int)(sc.Float * TICRATE);
+					ambient->periodmin = (int)(sc.Float * GameTicRate);
 				}
 				else
 				{
@@ -1914,7 +1914,7 @@ DEFINE_ACTION_FUNCTION(AAmbientSound, Activate)
 				self->Destroy ();
 				return 0;
 			}
-			amb->periodmin = ::Scale(S_GetMSLength(amb->sound), TICRATE, 1000);
+			amb->periodmin = ::Scale(S_GetMSLength(amb->sound), GameTicRate, 1000);
 		}
 
 		self->special1 = 0;

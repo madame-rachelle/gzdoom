@@ -948,7 +948,7 @@ bool FLevelLocals::DoCompleted (FString nextlevel, wbstartstruct_t &wminfo)
 	wminfo.maxitems = total_items;
 	wminfo.maxsecret = total_secrets;
 	wminfo.maxfrags = 0;
-	wminfo.partime = TICRATE * partime;
+	wminfo.partime = GameTicRate * partime;
 	wminfo.sucktime = sucktime;
 	wminfo.pnum = consoleplayer;
 	wminfo.totaltime = totaltime;
@@ -1632,7 +1632,7 @@ void FLevelLocals::Init()
 	P_ClearParticles(this);
 	BaseBlendA = 0.0f;		// Remove underwater blend effect, if any
 
-	gravity = sv_gravity * 35/TICRATE;
+	gravity = sv_gravity * 35/GameTicRate;
 	aircontrol = sv_aircontrol;
 	AirControlChanged();
 	teamdamage = ::teamdamage;
@@ -1659,13 +1659,13 @@ void FLevelLocals::Init()
 			flags |= LEVEL_HASFADETABLE;
 		}
 	}
-	airsupply = info->airsupply*TICRATE;
+	airsupply = info->airsupply*GameTicRate;
 	outsidefog = info->outsidefog;
 	WallVertLight = info->WallVertLight*2;
 	WallHorizLight = info->WallHorizLight*2;
 	if (info->gravity != 0.f)
 	{
-		gravity = info->gravity * 35/TICRATE;
+		gravity = info->gravity * 35/GameTicRate;
 	}
 	if (info->aircontrol != 0.f)
 	{

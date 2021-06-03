@@ -1437,7 +1437,7 @@ bool PIT_CheckThing(FMultiBlockThingsIterator &it, FMultiBlockThingsIterator::Ch
 			) && (thing->Level->maptime > thing->lastbump)) // Leave the bumper enough time to go away
 		{
 			if (P_ActivateThingSpecial(thing, tm.thing))
-				thing->lastbump = thing->Level->maptime + TICRATE;
+				thing->lastbump = thing->Level->maptime + GameTicRate;
 		}
 	}
 

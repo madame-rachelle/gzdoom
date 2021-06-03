@@ -41,7 +41,7 @@
 #include "actorinlines.h"
 #include "texturemanager.h"
 
-#define ST_RAMPAGEDELAY 		(2*TICRATE)
+#define ST_RAMPAGEDELAY 		(2*GameTicRate)
 #define ST_MUCHPAIN 			20
 
 TArray<FMugShotState> MugShotStates;

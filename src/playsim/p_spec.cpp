@@ -682,7 +682,7 @@ void P_UpdateSpecials (FLevelLocals *Level)
 	// LEVEL TIMER
 	if (deathmatch && timelimit)
 	{
-		if (Level->maptime >= (int)(timelimit * TICRATE * 60))
+		if (Level->maptime >= (int)(timelimit * GameTicRate * 60))
 		{
 			Printf ("%s\n", GStrings("TXT_TIMELIMIT"));
 			Level->ExitLevel(0, false);

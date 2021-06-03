@@ -196,7 +196,7 @@ DHUDMessage::DHUDMessage (FFont *font, const char *text, float x, float y, int h
 	WrapWidth = 0;
 	HandleAspect = true;
 	Top = y;
-	HoldTics = (int)(holdTime * TICRATE);
+	HoldTics = (int)(holdTime * GameTicRate);
 	Tics = -1;	// -1 to compensate for one additional Tick the message will receive.
 
 	// Try to find the optimal font if none is specified. Prefer SmallFont, but if that cannot handle this text use the IWAD's SmallFont and if that doesn't work either, use the VGA font.
@@ -531,7 +531,7 @@ DHUDMessageFadeOut::DHUDMessageFadeOut (FFont *font, const char *text, float x, 
 	EColorRange textColor, float holdTime, float fadeOutTime)
 	: DHUDMessage (font, text, x, y, hudwidth, hudheight, textColor, holdTime)
 {
-	FadeOutTics = (int)(fadeOutTime * TICRATE);
+	FadeOutTics = (int)(fadeOutTime * GameTicRate);
 	State = 1;
 }
 
@@ -625,7 +625,7 @@ DHUDMessageFadeInOut::DHUDMessageFadeInOut (FFont *font, const char *text, float
 	EColorRange textColor, float holdTime, float fadeInTime, float fadeOutTime)
 	: DHUDMessageFadeOut (font, text, x, y, hudwidth, hudheight, textColor, holdTime, fadeOutTime)
 {
-	FadeInTics = (int)(fadeInTime * TICRATE);
+	FadeInTics = (int)(fadeInTime * GameTicRate);
 	State = FadeInTics == 0;
 }
 
@@ -718,7 +718,7 @@ DHUDMessageTypeOnFadeOut::DHUDMessageTypeOnFadeOut (FFont *font, const char *tex
 	EColorRange textColor, float typeTime, float holdTime, float fadeOutTime)
 	: DHUDMessageFadeOut (font, text, x, y, hudwidth, hudheight, textColor, holdTime, fadeOutTime)
 {
-	TypeOnTime = typeTime * TICRATE;
+	TypeOnTime = typeTime * GameTicRate;
 	if (TypeOnTime == 0.f)
 		TypeOnTime = 0.1f;
 	CurrLine = 0;

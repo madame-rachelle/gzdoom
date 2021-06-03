@@ -1326,8 +1326,8 @@ bool FLevelLocals::EV_StartWaggle (int tag, line_t *line, int height, int speed,
 		waggle->m_AccDelta = speed / 64.;
 		waggle->m_Scale = 0;
 		waggle->m_TargetScale = height / 64.;
-		waggle->m_ScaleDelta = waggle->m_TargetScale / (TICRATE + ((3 * TICRATE)*height) / 255);
-		waggle->m_Ticker = timer ? timer*TICRATE : -1;
+		waggle->m_ScaleDelta = waggle->m_TargetScale / (GameTicRate + ((3 * GameTicRate)*height) / 255);
+		waggle->m_Ticker = timer ? timer*GameTicRate : -1;
 		waggle->m_State = WGLSTATE_EXPAND;
 	}
 	return retCode;

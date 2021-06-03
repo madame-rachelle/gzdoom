@@ -180,7 +180,7 @@ void V_AddPlayerBlend (player_t *CPlayer, float blend[4], float maxinvalpha, int
 	{
 		if (paletteflash & PF_HAZARD)
 		{
-			if (CPlayer->hazardcount > 16*TICRATE || (CPlayer->hazardcount & 8))
+			if (CPlayer->hazardcount > 16*GameTicRate || (CPlayer->hazardcount & 8))
 			{
 				float r = ((Level->hazardflash & 0xff0000) >> 16) / 255.f;
 				float g = ((Level->hazardflash & 0xff00) >> 8) / 255.f;

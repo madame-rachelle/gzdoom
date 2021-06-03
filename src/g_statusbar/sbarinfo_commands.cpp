@@ -1444,7 +1444,7 @@ class CommandDrawNumber : public CommandDrawString
 					int retv;
 					VMReturn ret(&retv);
 					VMCall(func, params, 2, &ret, 1);
-					num = retv < 0? 0 :  retv / TICRATE + 1;
+					num = retv < 0? 0 :  retv / GameTicRate + 1;
 					break;
 				}
 				case INVENTORY:
@@ -1459,9 +1459,9 @@ class CommandDrawNumber : public CommandDrawString
 				case AIRTIME:
 				{
 					if(statusBar->CPlayer->mo->waterlevel < 3)
-						num = primaryLevel->airsupply/TICRATE;
+						num = primaryLevel->airsupply/GameTicRate;
 					else
-						num = clamp<int>((statusBar->CPlayer->air_finished - primaryLevel->maptime + (TICRATE-1))/TICRATE, 0, INT_MAX);
+						num = clamp<int>((statusBar->CPlayer->air_finished - primaryLevel->maptime + (GameTicRate-1))/GameTicRate, 0, INT_MAX);
 					break;
 				}
 				case SELECTEDINVENTORY:
