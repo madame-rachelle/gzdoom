@@ -773,9 +773,9 @@ static void S_SetListener(AActor *listenactor)
 	{
 		listener.angle = (float)listenactor->Angles.Yaw.Radians();
 		/*
-		listener.velocity.X = listenactor->vel.x * (TICRATE/65536.f);
-		listener.velocity.Y = listenactor->vel.z * (TICRATE/65536.f);
-		listener.velocity.Z = listenactor->vel.y * (TICRATE/65536.f);
+		listener.velocity.X = listenactor->vel.x * (GameTicRate/65536.f);
+		listener.velocity.Y = listenactor->vel.z * (GameTicRate/65536.f);
+		listener.velocity.Z = listenactor->vel.y * (GameTicRate/65536.f);
 		*/
 		listener.velocity.Zero();
 		listener.position = listenactor->SoundPos();

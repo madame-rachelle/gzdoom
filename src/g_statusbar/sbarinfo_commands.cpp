@@ -1437,7 +1437,7 @@ class CommandDrawNumber : public CommandDrawString
 					break;
 				case POWERUPTIME:
 				{
-					// num = statusBar.CPlayer.mo.GetEffectTicsForItem(inventoryItem) / TICRATE + 1;
+					// num = statusBar.CPlayer.mo.GetEffectTicsForItem(inventoryItem) / GameTicRate + 1;
 					static VMFunction *func = nullptr;
 					if (func == nullptr) PClass::FindFunction(&func, NAME_PlayerPawn, "GetEffectTicsForItem");
 					VMValue params[] = { statusBar->CPlayer->mo, inventoryItem };

@@ -518,7 +518,7 @@ void HSendPacket (int node, int len)
 	{
 		PacketStore store;
 		store.message = doomcom;
-		store.timer = I_GetTime() + ((net_fakelatency / 2) / (1000 / TICRATE));
+		store.timer = I_GetTime() + ((net_fakelatency / 2) / (1000 / GameTicRate));
 		OutBuffer.Push(store);
 	}
 	else
@@ -567,7 +567,7 @@ bool HGetPacket (void)
 	{
 		PacketStore store;
 		store.message = doomcom;
-		store.timer = I_GetTime() + ((net_fakelatency / 2) / (1000 / TICRATE));
+		store.timer = I_GetTime() + ((net_fakelatency / 2) / (1000 / GameTicRate));
 		InBuffer.Push(store);
 		doomcom.remotenode = -1;
 	}
