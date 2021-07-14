@@ -201,14 +201,9 @@ const char* iwad_folders[13] = { "flats/", "textures/", "hires/", "sprites/", "v
 const char* iwad_reserved[12] = { "mapinfo", "zmapinfo", "gameinfo", "sndinfo", "sbarinfo", "menudef", "gldefs", "animdefs", "decorate", "zscript", "iwadinfo", "maps/" };
 
 
-CUSTOM_CVAR(Float, i_timescale, 1.0f, CVAR_NOINITCALL | CVAR_VIRTUAL)
+CUSTOM_CVAR(Float, i_timescale, 1.0f, CVAR_NOINITCALL | CVAR_VIRTUAL | CVAR_SERVERINFO)
 {
-	if (netgame)
-	{
-		Printf("Time scale cannot be changed in net games.\n");
-		self = 1.0f;
-	}
-	else if (self >= 0.05f)
+	if (self >= 0.15f)
 	{
 		I_FreezeTime(true);
 		TimeScale = self;
@@ -216,7 +211,7 @@ CUSTOM_CVAR(Float, i_timescale, 1.0f, CVAR_NOINITCALL | CVAR_VIRTUAL)
 	}
 	else
 	{
-		Printf("Time scale must be at least 0.05!\n");
+		Printf("Time scale must be at least 0.15!\n");
 	}
 }
 
