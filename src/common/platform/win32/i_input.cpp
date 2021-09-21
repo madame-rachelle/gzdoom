@@ -142,6 +142,7 @@ static bool EventHandlerResultForNativeMouse;
 
 CVAR (Bool, i_soundinbackground, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 CVAR (Bool, k_allowfullscreentoggle, true, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+CVAR (Bool, i_capturekeys, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 
 extern int chatmodeon;
 
@@ -168,6 +169,46 @@ void I_ReleaseMouseCapture()
 {
 	ReleaseCapture();
 }
+
+HHOOK hHook = 0;
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	// this is required by the OS
+	if (nCode < 0)
+		return CallNextHookEx(hHook, nCode, wParam, lParam);
+
+	// don't capture if not foreground, or if cvar says no.
+	//if ((GetCapture() != Window) || (!i_capturekeys))
+	if (!i_capturekeys)
+		return CallNextHookEx(hHook, nCode, wParam, lParam);
+
+	bool bControlKeyDown = GetAsyncKeyState(VK_CONTROL);
+	bool bAltKeyDown = GetAsyncKeyState(VK_MENU);
+
+	if (nCode == HC_ACTION)
+	{
+		KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*) lParam;
+
+		if ((p->vkCode == VK_RWIN) || (p->vkCode == VK_LWIN))
+			return 1;
+
+		if (bAltKeyDown)
+		{
+			if (p->vkCode == VK_ESCAPE)
+				return 1;
+
+			if (p->vkCode == VK_TAB)
+				return 1;
+		}
+		if (bControlKeyDown)
+		{
+			if (p->vkCode == VK_TAB)
+				return 1;
+		}
+	}
+	return CallNextHookEx(hHook, nCode, wParam, lParam);
+}
+
 
 bool GUIWndProcHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result)
 {
@@ -669,6 +710,8 @@ bool I_InitInput (void *hwnd)
 	Printf ("I_StartupDirectInputJoystick\n");
 	I_StartupDirectInputJoystick();
 
+	hHook = SetWindowsHookExW(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+
 	return TRUE;
 }
 
@@ -709,6 +752,7 @@ void I_ShutdownInput ()
 		FreeLibrary (DInputDLL);
 		DInputDLL = NULL;
 	}
+	UnhookWindowsHookEx(hHook);
 }
 
 void I_GetEvent ()
