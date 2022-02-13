@@ -709,6 +709,8 @@ public:
 	virtual void PostBeginPlay() override;		// Called immediately before the actor's first tick
 	virtual void Tick() override;
 
+	void PlayerLandedMakeGruntSound(AActor* onmobj);
+
 	static AActor *StaticSpawn (FLevelLocals *Level, PClassActor *type, const DVector3 &pos, replace_t allowreplacement, bool SpawningMapThing = false);
 
 	inline AActor *GetDefault () const
