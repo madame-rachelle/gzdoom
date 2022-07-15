@@ -197,3 +197,60 @@ int main (int argc, char **argv)
 
 	return result;
 }
+
+// this requires Qt. if it's not enabled during compilation, this code turns into a stub and is not active.
+void I_PreventSleep(bool entry_or_exit)
+{
+#ifdef Q_OS_LINUX
+    const int MAX_SERVICES = 2;
+
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    if(bus.isConnected())
+    {
+        QString services[MAX_SERVICES] =
+        {
+            "org.freedesktop.ScreenSaver",
+            "org.gnome.SessionManager"
+        };
+        QString paths[MAX_SERVICES] =
+        {
+            "/org/freedesktop/ScreenSaver",
+            "/org/gnome/SessionManager"
+        };
+
+
+        static uint cookies[2];
+
+        for(int i = 0; i < MAX_SERVICES ; i++)
+        {
+            QDBusInterface screenSaverInterface( services[i], paths[i],services[i], bus);
+
+            if (!screenSaverInterface.isValid())
+                continue;
+
+            QDBusReply<uint> reply;
+
+            if(entry_or_exit)
+            {
+                reply = screenSaverInterface.call("Inhibit", GAMENAME, "Game Playing");
+            }
+            else
+            {
+                reply  = screenSaverInterface.call("UnInhibit", cookies[i]);
+            }
+
+            if (reply.isValid())
+            {
+                cookies[i] = reply.value();
+
+                // qDebug()<<"succesful: " << reply;
+            }
+            else
+            {
+                // QDBusError error =reply.error();
+                // qDebug()<<error.message()<<error.name();
+            }
+        }
+    }
+#endif
+}

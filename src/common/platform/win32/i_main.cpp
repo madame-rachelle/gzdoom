@@ -563,3 +563,14 @@ void I_SetWindowTitle(const char* caption)
 {
 	mainwindow.SetWindowTitle(caption);
 }
+
+// entry_or_exit is "true" if starting up, "false" if exiting, or if the relevant cvar is disabled
+void I_PreventSleep(bool entry_or_exit)
+{
+	if (entry_or_exit)
+		SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_AWAYMODE_REQUIRED);
+		// disable sleep
+	else
+		SetThreadExecutionState(ES_CONTINUOUS);
+		// allow sleep
+}

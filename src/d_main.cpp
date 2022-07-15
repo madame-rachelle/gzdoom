@@ -146,6 +146,7 @@ void Local_Job_Init();
 // EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
 
 extern void I_SetWindowTitle(const char* caption);
+extern void I_PreventSleep(bool aye);
 extern void ReadStatistics();
 extern void M_SetDefaultMode ();
 extern void G_NewInit ();
@@ -308,6 +309,10 @@ CUSTOM_CVAR (Bool, i_discordrpc, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 CUSTOM_CVAR(Int, I_FriendlyWindowTitle, 1, CVAR_GLOBALCONFIG|CVAR_ARCHIVE|CVAR_NOINITCALL)
 {
 	I_UpdateWindowTitle();
+}
+CUSTOM_CVAR(Bool, i_preventsystemsleep, true, CVAR_ARCHIVE|CVAR_GLOBALCONFIG|CVAR_NOINITCALL)
+{
+	I_PreventSleep(!!(self));
 }
 CVAR(Bool, cl_nointros, false, CVAR_ARCHIVE)
 
@@ -3642,6 +3647,7 @@ static int D_DoomMain_Internal (void)
 
 		D_DoAnonStats();
 		I_UpdateWindowTitle();
+		I_PreventSleep(i_preventsystemsleep);
 		D_DoomLoop ();		// this only returns if a 'restart' CCMD is given.
 		// 
 		// Clean up after a restart
