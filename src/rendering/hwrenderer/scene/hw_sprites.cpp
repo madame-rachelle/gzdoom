@@ -80,6 +80,7 @@ EXTERN_CVAR(Float, r_actorspriteshadowfadeheight)
 CVAR(Bool, gl_usecolorblending, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG)
 CVAR(Bool, gl_sprite_blend, false, CVAR_ARCHIVE | CVAR_GLOBALCONFIG);
 CVAR(Int, gl_spriteclip, 1, CVAR_ARCHIVE)
+CVAR(Float, gl_spriteclipanamorphicminbias, 0.6, CVAR_ARCHIVE)
 CVAR(Float, gl_sclipthreshold, 10.0, CVAR_ARCHIVE)
 CVAR(Float, gl_sclipfactor, 1.8f, CVAR_ARCHIVE)
 CVAR(Int, gl_particles_style, 2, CVAR_ARCHIVE | CVAR_GLOBALCONFIG) // 0 = square, 1 = round, 2 = smooth
@@ -1087,6 +1088,45 @@ void HWSprite::Process(HWDrawInfo *di, AActor* thing, sector_t * sector, area_t 
 	if(((di->Viewpoint.camera->ViewPos != NULL) && (di->Viewpoint.camera->ViewPos->Flags & VPSF_ISOMETRICSPRITES))) depth = depth * vp.PitchCos - vp.PitchSin * z2; // Helps with stacking actors with small xy offsets
 	if (isSpriteShadow) depth += 1.f/65536.f; // always sort shadows behind the sprite.
 
+	if (gl_spriteclip == -1 && (thing->renderflags & RF_SPRITETYPEMASK) == RF_FACESPRITE) // perform anamorphosis
+	{
+		float minbias = gl_spriteclipanamorphicminbias;
+		minbias = clamp(minbias, 0.3f, 1.0f);
+
+		float btm = thing->Sector->floorplane.ZatPoint(thing) - thing->Floorclip;
+		float top = thing->Sector->ceilingplane.ZatPoint(thingpos);
+
+		float vbtm = thing->Sector->floorplane.ZatPoint(vp.Pos);
+		float vtop = thing->Sector->ceilingplane.ZatPoint(vp.Pos);
+
+		float vpx = vp.Pos.X;
+		float vpy = vp.Pos.Y;
+		float vpz = vp.Pos.Z;
+
+		float bintersect, tintersect;
+		if (z2 < vpz && vbtm < vpz)     //(abs(z2 - vpz) > 0.01)
+			bintersect = min((btm - vpz) / (z2 - vpz), (vbtm - vpz) / (z2 - vpz));
+		else
+			bintersect = 1.0;
+
+		if (z1 > vpz && vtop > vpz)     //(abs(z1 - vpz) > 0.01)
+			tintersect = min((top - vpz) / (z1 - vpz), (vtop - vpz) / (z1 - vpz));
+		else
+			tintersect = 1.0;
+
+		if (thing->waterlevel >= 1 && thing->waterlevel <= 2)
+			bintersect = tintersect = 1.0f;
+
+		float spbias = clamp(min(bintersect, tintersect), minbias, 1.0f);
+		float vpbias = 1.0 - spbias;
+		x1 = x1 * spbias + vpx * vpbias;
+		y1 = y1 * spbias + vpy * vpbias;
+		z1 = z1 * spbias + vpz * vpbias;
+		x2 = x2 * spbias + vpx * vpbias;
+		y2 = y2 * spbias + vpy * vpbias;
+		z2 = z2 * spbias + vpz * vpbias;		
+	}
+
 	// light calculation
 
 	bool enhancedvision = false;
@@ -1305,6 +1345,7 @@ void HWSprite::Process(HWDrawInfo *di, AActor* thing, sector_t * sector, area_t 
 	{
 		lightlist = nullptr;
 	}
+
 	PutSprite(di, hw_styleflags != STYLEHW_Solid);
 	rendered_sprites++;
 }
