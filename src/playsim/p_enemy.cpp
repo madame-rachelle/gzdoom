@@ -2245,18 +2245,14 @@ bool AActor::CanPathfind()
 			return true;
 
 		// Can't pathfind while feared.
-		if (flags4 & MF4_FRIGHTENED)
-			return false;
-
-		if (target)
+		if (!(flags4 & MF4_FRIGHTENED))
 		{
-			if (target->flags8 & MF8_FRIGHTENING)
-				return false;
+			if (!target)	
+				return true;
 
-			if (target->player && target->player->cheats & CF_FRIGHTENING)
-				return false;
+			if (!target->flags8 & MF8_FRIGHTENING)
+				return (!target->player || !(target->player->cheats & CF_FRIGHTENING));
 		}
-		return true;
 	}
 	return false;
 }
