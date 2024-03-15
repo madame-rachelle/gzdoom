@@ -805,13 +805,10 @@ class Actor : Thinker native
 	native clearscope bool CanPathfind() const;
 	virtual void ReachedNode(Actor mo)
 	{
-		if (!mo)
-		{
-			if (!goal)
-				return;
-			mo = goal;
-		}
+		if (!mo && !goal) 
+			return;
 		
+		mo = goal;
 		let node = PathNode(mo);
 		if (!node || !target || (!bKEEPPATH && CheckSight(target)))
 		{
@@ -841,7 +838,7 @@ class Actor : Thinker native
 
 		if (i >= end)
 			ClearPath();
-		
+	
 	}
 
 	// Return true to mark the node as ineligible for constructing a path along.
@@ -853,15 +850,12 @@ class Actor : Thinker native
 		// STANDSTILL flag is used to require the actor to be bigger instead of smaller.
 		double r = node.Scale.X;
 		double h = node.Scale.Y;
-
-		if (r <= 0.0 && h <= 0.0)
-			return false;
 		
 		// Perfect fit.
 		if (radius == r && height == h)
 			return false; 
 
-		if ((r < radius) || (h < height))
+		if ((0.0 < r && r < radius) || (0.0 < h && h < height))
 			return !node.bSTANDSTILL;
 		
 		return false;

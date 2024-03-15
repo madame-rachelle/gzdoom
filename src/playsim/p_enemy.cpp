@@ -951,13 +951,13 @@ void P_DoNewChaseDir (AActor *actor, double deltax, double deltay)
 //
 //=============================================================================
 
-void DoNewChaseDir(AActor * actor, bool node)
+void P_NewChaseDir(AActor * actor)
 {
 	DVector2 delta;
 
 	actor->strafecount = 0;
 
-	if ((node || actor->flags5&MF5_CHASEGOAL || actor->goal == actor->target) && actor->goal != nullptr)
+	if ((actor->flags5&MF5_CHASEGOAL || actor->goal == actor->target) && actor->goal!=NULL)
 	{
 		delta = actor->Vec2To(actor->goal);
 	}
@@ -1094,11 +1094,6 @@ void DoNewChaseDir(AActor * actor, bool node)
 	if (actor->strafecount)
 		actor->movecount = actor->strafecount;
 
-}
-
-void P_NewChaseDir(AActor* actor)
-{
-	DoNewChaseDir(actor, false);
 }
 
 //=============================================================================
@@ -2584,11 +2579,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 	}
 
 	// [RH] Don't attack if just moving toward goal
-	static const PClass* nodeCls = PClass::FindClass(NAME_PathNode);
-	bool pnode = (actor->goal && nodeCls->IsAncestorOf(actor->goal->GetClass()));
-
-	if (!pnode &&
-		(actor->target == actor->goal || (actor->flags5&MF5_CHASEGOAL && actor->goal)))
+	if (actor->target == actor->goal || (actor->flags5&MF5_CHASEGOAL && actor->goal != nullptr))
 	{
 		AActor * savedtarget = actor->target;
 		actor->target = actor->goal;
@@ -2736,7 +2727,8 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			
 		if (sight == 0)
 		{
-			if (pnode && !(actor->goal->flags & MF_AMBUSH))
+			static const PClass* nodeCls = PClass::FindClass(NAME_PathNode);
+			if (actor->goal && !(actor->goal->flags & MF_AMBUSH) && nodeCls->IsAncestorOf(actor->goal->GetClass()))
 			{
 				AActor* temp = actor->target;
 				actor->target = actor->goal;
@@ -2774,7 +2766,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 		// chase towards player
 		if ((--actor->movecount < 0 && !(flags & CHF_NORANDOMTURN)) || (!P_SmartMove(actor) && !(flags & CHF_STOPIFBLOCKED)))
 		{
-			DoNewChaseDir(actor, pnode);
+			P_NewChaseDir(actor);
 		}
 		// if the move was illegal, reset it 
 		// (copied from A_SerpentChase - it applies to everything with CANTLEAVEFLOORPIC!)
@@ -2790,7 +2782,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 				}
 			}
 			if (!(flags & CHF_STOPIFBLOCKED))
-				DoNewChaseDir(actor, pnode);
+				P_NewChaseDir(actor);
 		}
 	}
 	else if (dontmove && actor->movecount > 0) actor->movecount--;
