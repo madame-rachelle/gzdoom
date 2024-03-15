@@ -261,7 +261,7 @@ class Actor : Thinker native
 	private native int InventoryID;	// internal counter.
 	native uint freezetics;
 	native Vector2 AutomapOffsets;
-	native Array<PathNode> Path;
+	native Array<Actor> Path; // Cannot be cast to PathNode, unfortunately.
 	native double LandingSpeed;
 
 	meta String Obituary;		// Player was killed by this actor
