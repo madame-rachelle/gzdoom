@@ -2201,26 +2201,6 @@ DEFINE_ACTION_FUNCTION(AActor, A_ClearLastHeard)
 
 //==========================================================================
 //
-// ClearPath
-//
-//==========================================================================
-
-void AActor::ClearPath()
-{
-	Path.Clear();
-	if (goal && goal->IsKindOf(NAME_PathNode))
-		goal = nullptr;
-}
-
-DEFINE_ACTION_FUNCTION(AActor, ClearPath)
-{
-	PARAM_SELF_PROLOGUE(AActor);
-	self->ClearPath();
-	return 0;
-}
-
-//==========================================================================
-//
 // A_Wander
 //
 //==========================================================================
@@ -2431,7 +2411,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 
 	// [RH] Friendly monsters will consider chasing whoever hurts a player if they
 	// don't already have a target.
-	if (actor->flags & MF_FRIENDLY && actor->target == nullptr)
+	if (actor->flags & MF_FRIENDLY && actor->target == NULL)
 	{
 		player_t *player;
 
@@ -2463,7 +2443,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 	}
 	if (!actor->target || !(actor->target->flags & MF_SHOOTABLE))
 	{ // look for a new target
-		if (actor->target != nullptr && (actor->target->flags2 & MF2_NONSHOOTABLE))
+		if (actor->target != NULL && (actor->target->flags2 & MF2_NONSHOOTABLE))
 		{
 			// Target is only temporarily unshootable, so remember it.
 			actor->lastenemy = actor->target;
@@ -2471,17 +2451,17 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			// hurt our old one temporarily.
 			actor->threshold = 0;
 		}
-		if (P_LookForPlayers (actor, !(flags & CHF_DONTLOOKALLAROUND), nullptr) && actor->target != actor->goal)
+		if (P_LookForPlayers (actor, !(flags & CHF_DONTLOOKALLAROUND), NULL) && actor->target != actor->goal)
 		{ // got a new target
 			actor->flags7 &= ~MF7_INCHASE;
 			return;
 		}
-		if (actor->target == nullptr)
+		if (actor->target == NULL)
 		{
 			if (flags & CHF_DONTIDLE || actor->flags & MF_FRIENDLY)
 			{
 				//A_Look(actor);
-				if (actor->target == nullptr)
+				if (actor->target == NULL)
 				{
 					if (!dontmove) A_Wander(actor);
 					actor->flags7 &= ~MF7_INCHASE;
@@ -2490,7 +2470,6 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			}
 			else
 			{
-				actor->ClearPath();
 				actor->SetIdle();
 				actor->flags7 &= ~MF7_INCHASE;
 				return;
@@ -2514,31 +2493,9 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 		actor->flags7 &= ~MF7_INCHASE;
 		return;
 	}
-
-	if (actor->target && actor->flags9 & MF9_PATHING)
-	{
-		if (actor->goal && actor->goal->IsKindOf(NAME_PathNode))
-		{
-			AActor* temp = actor->target;
-			actor->target = actor->goal;
-			bool result = P_CheckMeleeRange(actor);
-			actor->target = temp;
-
-			if (result) // TO DO
-			{
-
-			}
-				
-		}
-		if (!actor->goal)
-		{
-			if (actor->Path.Size() < 1 && actor->Level->AStar(actor, actor->target))
-				actor->goal = actor->Path[0];
-				
-		}
-	}
+	
 	// [RH] Don't attack if just moving toward goal
-	else if (actor->target == actor->goal || (actor->flags5&MF5_CHASEGOAL && actor->goal != nullptr))
+	if (actor->target == actor->goal || (actor->flags5&MF5_CHASEGOAL && actor->goal != NULL))
 	{
 		AActor * savedtarget = actor->target;
 		actor->target = actor->goal;
@@ -2556,7 +2513,7 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			// as the goal.
 			while ( (spec = specit.Next()) )
 			{
-				P_ExecuteSpecial(actor->Level, spec->special, nullptr, actor, false, spec->args[0],
+				P_ExecuteSpecial(actor->Level, spec->special, NULL, actor, false, spec->args[0],
 					spec->args[1], spec->args[2], spec->args[3], spec->args[4]);
 			}
 
@@ -2579,7 +2536,6 @@ void A_DoChase (AActor *actor, bool fastchase, FState *meleestate, FState *missi
 			if (newgoal != NULL && delay != 0)
 			{
 				actor->flags4 |= MF4_INCOMBAT;
-				actor->ClearPath(); // [MC] Just to be safe.
 				actor->SetIdle();
 			}
 			actor->flags7 &= ~MF7_INCHASE;
