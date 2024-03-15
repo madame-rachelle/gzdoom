@@ -257,9 +257,6 @@ AMBUSH
 	Useful for tele/portals since the engine makes them "touch"
 	upon transitioning. These nodes are fast forwarded over in Actor's
 	ReachedNode() function.
-
-STANDSTILL
-	Traveller must be bigger instead of smaller.
 */
 class PathNode : Actor
 {
@@ -276,12 +273,7 @@ class PathNode : Actor
 		Radius 16;
 		Height 56;
 		RenderStyle "None";
-
-		// The following properties can be set directly in Ultimate Doom Builder's Custom tab.
-
-		FriendlySeeBlocks 0;	// Sight checks limited to this. <= 0 is infinite.
-		XScale 0;				// filter height - actors must be this small for this node. Only effective if > 0.
-		YScale 0;				// filter radius - ^ but for radius
+		MeleeRange 0; // Sight checks limited to this. 0 = infinite. Set within map editor.
 	}
 	
 	// Args are TIDs. Can be one way to force single directions.
