@@ -98,6 +98,9 @@ protected:
 	void ValidateTexture();
 	virtual bool DoProgress(int);
 	virtual void DoNetProgress(int count);
+private:
+	bool bThreadActive = false; // start screen drawing is active
+	void ThreadedRender(uint64_t time);
 };
 
 FStartScreen* GetGameStartScreen(int max_progress);

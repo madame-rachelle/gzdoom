@@ -33,6 +33,7 @@
 **
 */
 
+#include <thread>
 #include "startscreen.h"
 #include "filesystem.h"
 #include "palutil.h"
@@ -652,42 +653,55 @@ void FStartScreen::NetProgress(int count)
 	Render();
 }
 
+void FStartScreen::ThreadedRender(uint64_t nowtime)
+{
+	if (!this)
+		return;
+	screen->FrameTime = nowtime;
+	screen->BeginFrame();
+	twod->ClearClipRect();
+	I_GetEvent();
+	ValidateTexture();
+	float displaywidth;
+	float displayheight;
+	twod->Begin(screen->GetWidth(), screen->GetHeight());
+
+	// At this point the shader for untextured rendering has not been loaded yet, so we got to clear the screen by rendering a texture with black color.
+	DrawTexture(twod, StartupTexture, 0, 0, DTA_VirtualWidthF, StartupTexture->GetDisplayWidth(), DTA_VirtualHeightF, StartupTexture->GetDisplayHeight(), DTA_KeepRatio, true, DTA_Color, PalEntry(255,0,0,0), TAG_END);
+
+	if (HeaderTexture)
+	{
+		displaywidth = HeaderTexture->GetDisplayWidth();
+		displayheight = HeaderTexture->GetDisplayHeight() + StartupTexture->GetDisplayHeight();
+		DrawTexture(twod, HeaderTexture, 0, 0, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
+		DrawTexture(twod, StartupTexture, 0, 32, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
+		if (NetMaxPos >= 0) DrawTexture(twod, NetTexture, 0, displayheight - 16, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
+	}
+	else
+	{
+		displaywidth = StartupTexture->GetDisplayWidth();
+		displayheight = StartupTexture->GetDisplayHeight();
+		DrawTexture(twod, StartupTexture, 0, 0, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
+	}
+
+	twod->End();
+	screen->Update();
+	twod->OnFrameDone();
+	bThreadActive = false;
+}
+
 void FStartScreen::Render(bool force)
 {
 	auto nowtime = I_msTime();
 	// Do not refresh too often. This function gets called a lot more frequently than the screen can update.
-	if (nowtime - screen->FrameTime > 30 || force)
+	if (nowtime - screen->FrameTime > 50 || force)
 	{
-		screen->FrameTime = nowtime;
-		screen->BeginFrame();
-		twod->ClearClipRect();
-		I_GetEvent();
-		ValidateTexture();
-		float displaywidth;
-		float displayheight;
-		twod->Begin(screen->GetWidth(), screen->GetHeight());
-
-		// At this point the shader for untextured rendering has not been loaded yet, so we got to clear the screen by rendering a texture with black color.
-		DrawTexture(twod, StartupTexture, 0, 0, DTA_VirtualWidthF, StartupTexture->GetDisplayWidth(), DTA_VirtualHeightF, StartupTexture->GetDisplayHeight(), DTA_KeepRatio, true, DTA_Color, PalEntry(255,0,0,0), TAG_END);
-
-		if (HeaderTexture)
+		if (!bThreadActive) // if this bool is ever true, we're on a really slow computer! slow down the drawing
 		{
-			displaywidth = HeaderTexture->GetDisplayWidth();
-			displayheight = HeaderTexture->GetDisplayHeight() + StartupTexture->GetDisplayHeight();
-			DrawTexture(twod, HeaderTexture, 0, 0, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
-			DrawTexture(twod, StartupTexture, 0, 32, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
-			if (NetMaxPos >= 0) DrawTexture(twod, NetTexture, 0, displayheight - 16, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
+			bThreadActive = true;
+			std::thread t1(&FStartScreen::ThreadedRender, this, nowtime);
+			t1.detach();
 		}
-		else
-		{
-			displaywidth = StartupTexture->GetDisplayWidth();
-			displayheight = StartupTexture->GetDisplayHeight();
-			DrawTexture(twod, StartupTexture, 0, 0, DTA_VirtualWidthF, displaywidth, DTA_VirtualHeightF, displayheight, TAG_END);
-		}
-
-		twod->End();
-		screen->Update();
-		twod->OnFrameDone();
 	}
 }
 
