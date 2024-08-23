@@ -31,7 +31,7 @@ SDL2DisplayWindow::SDL2DisplayWindow(DisplayWindowHost* windowHost) : WindowHost
 	int result = SDL_CreateWindowAndRenderer(320, 200, SDL_WINDOW_HIDDEN /*| SDL_WINDOW_ALLOW_HIGHDPI*/, &WindowHandle, &RendererHandle);
 	if (result != 0)
 		throw std::runtime_error(std::string("Unable to create SDL window:") + SDL_GetError());
-	
+
 	WindowList[SDL_GetWindowID(WindowHandle)] = this;
 }
 
@@ -199,10 +199,10 @@ int SDL2DisplayWindow::GetPixelHeight() const
 	return h;
 }
 
+double get_scaling_factor(); // defined in another file - sdl2-detectscalingfactor.cpp
 double SDL2DisplayWindow::GetDpiScale() const
 {
-	// SDL2 doesn't really support this properly. SDL_GetDisplayDPI returns the wrong information according to the docs.
-	return 1.0;
+	return get_scaling_factor();
 }
 
 void SDL2DisplayWindow::PresentBitmap(int width, int height, const uint32_t* pixels)

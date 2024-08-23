@@ -74,6 +74,7 @@ set(ZWIDGET_COCOA_SOURCES
 set(ZWIDGET_SDL2_SOURCES
 	src/window/sdl2/sdl2displaywindow.cpp
 	src/window/sdl2/sdl2displaywindow.h
+	src/window/sdl2/sdl2-detectscalingfactor.cpp
 )
 
 source_group("src" REGULAR_EXPRESSION "${CMAKE_CURRENT_SOURCE_DIR}/src/.+")
