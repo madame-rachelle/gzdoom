@@ -43,7 +43,7 @@ public:
 	double Alpha = 1;
 	uint32_t AlphaColor = 0;
 	int Translation = 0;
-	FTextureID PicNum;
+	FTextureID PicNum, LastPatch;
 	uint32_t RenderFlags = 0;
 	FRenderStyle RenderStyle;
 	side_t *Side = nullptr;
@@ -147,6 +147,7 @@ public:
 	double m_Falloff;
 	int m_Highpoint, m_MiniCount;
 	double m_RollIntensity, m_RollWave;
+	bool hasPlayedSound;
 
 	double GetModIntensity(double intensity, bool fake = false) const;
 	double GetModWave(double ticFrac, double waveMultiplier) const;
