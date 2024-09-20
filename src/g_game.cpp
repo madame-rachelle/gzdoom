@@ -2188,17 +2188,46 @@ FString G_BuildSaveName (const char *prefix, int slot)
 	return name;
 }
 
+
+// @Cockatrice - Build a list of possible savegame locations to check given the prefix
+// Returns the number of items inserted into the array
+int G_BuildSaveNames(const char* prefix, TArray<FString> &outputAr) {
+	TArray<FString> paths;
+	M_GetSavegamesPaths(paths);
+
+	for (int x = 0; x < (int)paths.Size(); x++) {
+		const char* slash = "";
+		FString name;
+		FString leader = paths[x];
+		size_t len = leader.Len();
+		if (leader[0] != '\0' && leader[len - 1] != '\\' && leader[len - 1] != '/')
+		{
+			slash = "/";
+		}
+		name << leader << slash;
+		name = NicePath(name);
+		CreatePath(name);
+		name << prefix;
+
+		outputAr.Push(name);
+	}
+
+	return paths.Size();
+}
+
+
+
 CVAR (Int, autosavenum, 0, CVAR_NOSET|CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 static int nextautosave = -1;
 CVAR (Int, disableautosave, 0, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 CVAR (Bool, saveloadconfirmation, true, CVAR_ARCHIVE | CVAR_GLOBALCONFIG) // [mxd]
-CUSTOM_CVAR (Int, autosavecount, 4, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+CUSTOM_CVAR (Int, autosavecount, 16, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 {
 	if (self < 0)
 		self = 0;
 }
-CVAR (Int, quicksavenum, -1, CVAR_NOSET|CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
-static int lastquicksave = -1;
+//CVAR (Int, quicksavenum, -1, CVAR_NOSET|CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
+//static int lastquicksave = -1;
 CVAR (Bool, quicksaverotation, false, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 CUSTOM_CVAR (Int, quicksaverotationcount, 4, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 {
@@ -2206,15 +2235,92 @@ CUSTOM_CVAR (Int, quicksaverotationcount, 4, CVAR_ARCHIVE|CVAR_GLOBALCONFIG)
 		self = 1;
 }
 
+
+extern time_t epochoffset;
+
+// @cockatrice - Because of cloud saving, saves can come in from anywhere, which means quicksave numbers are completely unreliable
+// Instead of using the number system, find all quicksaves, and if we are over the rotation count we overwrite the oldest one
+FString G_FindSaveFilename(const char* header, int count = 1) {
+	TArray<FString> saveFiles;
+	FString filename, file;
+	int i, firstValidIndex = -1;
+
+	for (i = 0; i < 50; ++i)
+	{
+		filename = G_BuildSaveName(header, i);
+		if (FileExists(filename)) {
+			saveFiles.Push(filename);
+		}
+		else {
+			if (firstValidIndex == -1)
+				firstValidIndex = i;
+		}
+	}
+
+	if (saveFiles.Size() > (unsigned int)count) {
+		// We are over our quicksave rotation limit, so pick the oldest one to write over
+		// We can't rely on file dates, so read the save files
+		int desiredIndex = -1;
+		int lastDate = INT_MAX;
+
+		for (unsigned int x = 0; x < saveFiles.Size(); x++) {
+			std::unique_ptr<FResourceFile> savegame(FResourceFile::OpenResourceFile(saveFiles[x], true, true));
+			if (savegame != nullptr) {
+				FResourceLump* info = savegame->FindLump("info.json");
+				if (info == nullptr)
+					continue;
+
+				void* data = info->Lock();
+				FSerializer arc;
+				if (arc.OpenReader((const char*)data, info->LumpSize)) {
+					int date = 0;
+					arc("Save Date", date);
+
+					if (date > 0 && date < lastDate) {
+						desiredIndex = x;
+						lastDate = date;
+					}
+				}
+			}
+		}
+
+		if (desiredIndex >= 0) {
+			file = saveFiles[desiredIndex];
+		}
+		else {
+			// Fallback on overwriting the smallest number
+			file = saveFiles[0];
+		}
+	}
+	else {
+		if (firstValidIndex != -1) {
+			file = G_BuildSaveName(header, firstValidIndex);
+		}
+		else {
+			// Keep going until we find a valid filename
+			for (i = 0;; ++i) {
+				filename = G_BuildSaveName(header, i);
+				if (!FileExists(filename)) {
+					file = filename;
+					break;
+				}
+			}
+		}
+	}
+
+	return file;
+}
+
+
 void G_DoAutoSave ()
 {
 	FString description;
-	FString file;
+	//FString file;
 	// Keep up to four autosaves at a time
-	UCVarValue num;
-	const char *readableTime;
+	//UCVarValue num;
+	char readableTime[64];
 	int count = autosavecount != 0 ? autosavecount : 1;
-	
+	/*
 	if (nextautosave == -1) 
 	{
 		nextautosave = (autosavenum + 1) % count;
@@ -2223,7 +2329,7 @@ void G_DoAutoSave ()
 	num.Int = nextautosave;
 	autosavenum.ForceSet (num, CVAR_Int);
 
-	file = G_BuildSaveName ("auto", nextautosave);
+	file = G_BuildSaveName ("autosave", nextautosave);
 
 	// The hint flag is only relevant on the primary level.
 	if (!(primaryLevel->flags2 & LEVEL2_NOAUTOSAVEHINT))
@@ -2234,40 +2340,46 @@ void G_DoAutoSave ()
 	{
 		// This flag can only be used once per level
 		primaryLevel->flags2 &= ~LEVEL2_NOAUTOSAVEHINT;
-	}
+	}*/
+	// TODO: Figure out autosave hinting for this system
+	FString file = G_FindSaveFilename("autosave", count);
 
-	readableTime = myasctime ();
-	description.Format("Autosave %s", readableTime);
+	//readableTime = myasctime ();
+	time_t now;
+	time(&now);
+	now += epochoffset;
+	struct tm* nowInfo = localtime(&now);
+	strftime(readableTime, 64, "%H:%M:%S - %d/%m/%Y", nowInfo);
+	description.Format("Autosave: %s", readableTime);
 	G_DoSaveGame (false, false, file, description);
 }
 
+
+
+
 void G_DoQuickSave ()
 {
+	// @Cockatrice - Consult the event managers to determine if we are actually allowed to save at this moment
+	if (!staticEventManager.IsSaveAllowed(true)) {
+		if (developer > 0)
+			Printf("Quicksave rejected by event manager.");
+		return;
+	}
+
+	int count = quicksaverotationcount > 0 ? quicksaverotationcount : 1;
 	FString description;
-	FString file;
-	// Keeps a rotating set of quicksaves
-	UCVarValue num;
-	const char *readableTime;
-	int count = quicksaverotationcount != 0 ? quicksaverotationcount : 1;
-	
-	if (quicksavenum < 0) 
-	{
-		lastquicksave = 0;
-	}
-	else
-	{
-		lastquicksave = (quicksavenum + 1) % count;
-	}
+	FString file = G_FindSaveFilename("quicksave", count);
+	char readableTime[64];
 
-	num.Int = lastquicksave;
-	quicksavenum.ForceSet (num, CVAR_Int);
-
-	file = G_BuildSaveName ("quick", lastquicksave);
-
-	readableTime = myasctime ();
-	description.Format("Quicksave %s", readableTime);
+	time_t now;
+	time(&now);
+	now += epochoffset;
+	struct tm* nowInfo = localtime(&now);
+	strftime(readableTime, 64, "%H:%M:%S - %d/%m/%Y", nowInfo);
+	description.Format("Quicksave: %s", readableTime);
 	G_DoSaveGame (true, true, file, description);
 }
+
 
 
 static void PutSaveWads (FSerializer &arc)
@@ -2290,17 +2402,21 @@ static void PutSaveComment (FSerializer &arc)
 {
 	int levelTime;
 
-	FString comment = myasctime();
+	FString comment;// = myasctime();
 
-	arc.AddString("Creation Time", comment);
+	arc.AddString("Creation Time", myasctime());
 
-	// Get level name
-	comment.Format("%s - %s\n", primaryLevel->MapName.GetChars(), primaryLevel->LevelName.GetChars());
+	comment = staticEventManager.GetSavegameComments();
 
-	// Append elapsed time
-	const char *const time = GStrings("SAVECOMMENT_TIME");
-	levelTime = primaryLevel->time / TICRATE;
-	comment.AppendFormat("%s: %02d:%02d:%02d", time, levelTime/3600, (levelTime%3600)/60, levelTime%60);
+	if (comment.IsEmpty()) {
+		// Get level name
+		comment.Format("%s - %s\n", primaryLevel->MapName.GetChars(), primaryLevel->LevelName.GetChars());
+
+		// Append elapsed time
+		const char *const time = GStrings("SAVECOMMENT_TIME");
+		levelTime = primaryLevel->time / TICRATE;
+		comment.AppendFormat("%s: %02d:%02d:%02d", time, levelTime / 3600, (levelTime % 3600) / 60, levelTime % 60);
+	}
 
 	// Write out the comment
 	arc.AddString("Comment", comment);
@@ -2395,6 +2511,12 @@ void G_DoSaveGame (bool okForQuicksave, bool forceQuicksave, FString filename, c
 	PutSaveWads (savegameinfo);
 	PutSaveComment (savegameinfo);
 
+	// @Cockatrice - Add date value so we can sort entries by date saved
+	time_t cdate;
+	time(&cdate);
+	int cdatei = (int)cdate;
+	savegameinfo("Save Date", cdatei);
+
 	// Intermission stats for hubs
 	G_SerializeHub(savegameglobals);
 	C_SerializeCVars(savegameglobals, "servercvars", CVAR_SERVERINFO);
@@ -2446,7 +2568,7 @@ void G_DoSaveGame (bool okForQuicksave, bool forceQuicksave, FString filename, c
 
 	if (succeeded)
 	{
-		savegameManager.NotifyNewSave(filename, description, okForQuicksave, forceQuicksave);
+		savegameManager.NotifyNewSave(filename, description, cdatei, okForQuicksave, forceQuicksave);
 		BackupSaveName = filename;
 
 		if (longsavemessages) Printf("%s (%s)\n", GStrings("GGSAVED"), filename.GetChars());
@@ -3124,6 +3246,43 @@ DEFINE_ACTION_FUNCTION(FLevelLocals, MakeAutoSave)
 {
 	G_MakeAutoSave();
 	return 0;
+}
+
+// Similar to CCMD(quicksave) but with additional checks
+// Returns true if savegame was PERMITTED, but does not guarantee that save was created
+DEFINE_ACTION_FUNCTION(FLevelLocals, MakeQuickSave)
+{
+	if (!usergame || (players[consoleplayer].health <= 0 && !multiplayer))
+	{
+		S_Sound(CHAN_VOICE, CHANF_UI, "menu/invalid", snd_menuvolume, ATTN_NONE);
+		ACTION_RETURN_BOOL(false);
+	}
+
+	if (gamestate != GS_LEVEL)
+		ACTION_RETURN_BOOL(false);
+
+	// If the quick save rotation is enabled, it handles the save slot.
+	if (quicksaverotation)
+	{
+		G_DoQuickSave();
+		ACTION_RETURN_BOOL(true);
+	}
+
+	if (savegameManager.quickSaveSlot == NULL || savegameManager.quickSaveSlot == (FSaveGameNode*)1)
+	{
+		FString description;
+		FString file;
+		//lastquicksave = 0;
+		file = G_BuildSaveName("quicksave", 0);// lastquicksave);
+
+		FString readableTime = myasctime();
+		description.Format("Quicksave %s", readableTime.GetChars());
+		G_DoSaveGame(true, true, file, description);
+		ACTION_RETURN_BOOL(true);
+	}
+
+	G_SaveGame(savegameManager.quickSaveSlot->Filename.GetChars(), savegameManager.quickSaveSlot->SaveTitle.GetChars());
+	ACTION_RETURN_BOOL(true);
 }
 
 DEFINE_GLOBAL(players)

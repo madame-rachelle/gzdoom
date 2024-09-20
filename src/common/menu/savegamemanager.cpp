@@ -46,8 +46,9 @@
 #include "findfile.h"
 #include "v_draw.h"
 #include "savegamemanager.h"
+#include "events.h"
 
-
+EXTERN_CVAR(Int, developer);
 
 //=============================================================================
 //
@@ -133,7 +134,7 @@ int FSavegameManagerBase::InsertSaveNode(FSaveGameNode *node)
 		//if (SaveGames[0] == &NewSaveNode) i++; // To not insert above the "new savegame" dummy entry.
 		for (; i < SaveGames.Size(); i++)
 		{
-			if (SaveGames[i]->bOldVersion || node->SaveTitle.CompareNoCase(SaveGames[i]->SaveTitle) <= 0)
+			if (SaveGames[i]->saveDate < node->saveDate || (SaveGames[i]->saveDate == node->saveDate && node->SaveTitle.CompareNoCase(SaveGames[i]->SaveTitle) <= 0))
 			{
 				break;
 			}
@@ -149,7 +150,7 @@ int FSavegameManagerBase::InsertSaveNode(FSaveGameNode *node)
 //
 //=============================================================================
 
-void FSavegameManagerBase::NotifyNewSave(const FString &file, const FString &title, bool okForQuicksave, bool forceQuicksave)
+void FSavegameManagerBase::NotifyNewSave(const FString &file, const FString &title, int saveDate, bool okForQuicksave, bool forceQuicksave)
 {
 	if (file.IsEmpty())
 		return;
@@ -167,8 +168,13 @@ void FSavegameManagerBase::NotifyNewSave(const FString &file, const FString &tit
 #endif
 		{
 			node->SaveTitle = title;
+			node->saveDate = saveDate;
 			node->bOldVersion = false;
 			node->bMissingWads = false;
+
+			SaveGames.Delete(i);
+			i = InsertSaveNode(node);
+
 			if (okForQuicksave)
 			{
 				if (quickSaveSlot == nullptr || quickSaveSlot == (FSaveGameNode*)1 || forceQuicksave) quickSaveSlot = node;
@@ -183,6 +189,7 @@ void FSavegameManagerBase::NotifyNewSave(const FString &file, const FString &tit
 	node->Filename = file;
 	node->bOldVersion = false;
 	node->bMissingWads = false;
+	node->saveDate = saveDate;
 	int index = InsertSaveNode(node);
 
 	if (okForQuicksave)
@@ -230,6 +237,13 @@ DEFINE_ACTION_FUNCTION(FSavegameManager, LoadSavegame)
 
 void FSavegameManagerBase::DoSave(int Selected, const char *savegamestring)
 {
+	// @Cockatrice - Consult the event managers to determine if we are actually allowed to save at this moment
+	if (!staticEventManager.IsSaveAllowed(false)) {
+		if (developer > 0)
+			Printf("Save \"%s\" rejected by event manager.", savegamestring);
+		return;
+	}
+
 	if (Selected != 0)
 	{
 		auto node = SaveGames[Selected];
@@ -243,7 +257,7 @@ void FSavegameManagerBase::DoSave(int Selected, const char *savegamestring)
 
 		for (i = 0;; ++i)
 		{
-			filename = BuildSaveName("save", i);
+			filename = BuildSaveName("save_manual", i);
 			if (!FileExists(filename))
 			{
 				break;
@@ -394,10 +408,10 @@ DEFINE_ACTION_FUNCTION(FSavegameManager, ClearSaveStuff)
 //
 //=============================================================================
 
-bool FSavegameManagerBase::DrawSavePic(int x, int y, int w, int h)
+bool FSavegameManagerBase::DrawSavePic(int x, int y, int w, int h, bool filter)
 {
 	if (SavePic == nullptr) return false;
-	DrawTexture(twod, SavePic, x, y, 	DTA_DestWidth, w, DTA_DestHeight, h, DTA_Masked, false,	TAG_DONE);
+	DrawTexture(twod, SavePic, x, y, 	DTA_DestWidth, w, DTA_DestHeight, h, DTA_Masked, false, DTA_BilinearFilter, filter,	TAG_DONE);
 	return true;
 }
 
@@ -408,7 +422,8 @@ DEFINE_ACTION_FUNCTION(FSavegameManager, DrawSavePic)
 	PARAM_INT(y);
 	PARAM_INT(w);
 	PARAM_INT(h);
-	ACTION_RETURN_BOOL(self->DrawSavePic(x, y, w, h));
+	PARAM_BOOL(filter);
+	ACTION_RETURN_BOOL(self->DrawSavePic(x, y, w, h, filter));
 }
 
 //=============================================================================

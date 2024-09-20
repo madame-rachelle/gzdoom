@@ -36,13 +36,18 @@ extern bool gpuStatActive;
 extern bool keepGpuStatActive;
 extern FString gpuStatOutput;
 
-VkCommandBufferManager::VkCommandBufferManager(VulkanFrameBuffer* fb) : fb(fb)
+VkCommandBufferManager::VkCommandBufferManager(VulkanFrameBuffer* fb, VkQueue *queue, int queueFamily, bool uploadOnly) : fb(fb)
 {
-	mCommandPool.reset(new VulkanCommandPool(fb->device, fb->device->graphicsFamily));
+	mIsUploadOnly = uploadOnly;
+	fbQueue = queue;
+	mCommandPool.reset(new VulkanCommandPool(fb->device, queueFamily));
 
-	swapChain = std::make_unique<VulkanSwapChain>(fb->device);
-	mSwapChainImageAvailableSemaphore.reset(new VulkanSemaphore(fb->device));
-	mRenderFinishedSemaphore.reset(new VulkanSemaphore(fb->device));
+	if (!mIsUploadOnly) {
+		swapChain = std::make_unique<VulkanSwapChain>(fb->device);
+		mSwapChainImageAvailableSemaphore.reset(new VulkanSemaphore(fb->device));
+		mRenderFinishedSemaphore.reset(new VulkanSemaphore(fb->device));
+	}
+	
 
 	for (auto& semaphore : mSubmitSemaphore)
 		semaphore.reset(new VulkanSemaphore(fb->device));
@@ -53,7 +58,7 @@ VkCommandBufferManager::VkCommandBufferManager(VulkanFrameBuffer* fb) : fb(fb)
 	for (int i = 0; i < maxConcurrentSubmitCount; i++)
 		mSubmitWaitFences[i] = mSubmitFence[i]->fence;
 
-	if (fb->device->graphicsTimeQueries)
+	if (!mIsUploadOnly && fb->device->graphicsTimeQueries)
 	{
 		mTimestampQueryPool = QueryPoolBuilder()
 			.QueryType(VK_QUERY_TYPE_TIMESTAMP, MaxTimestampQueries)
@@ -80,13 +85,21 @@ VulkanCommandBuffer* VkCommandBufferManager::GetTransferCommands()
 
 VulkanCommandBuffer* VkCommandBufferManager::GetDrawCommands()
 {
-	if (!mDrawCommands)
+	if (!mDrawCommands && !mIsUploadOnly)
 	{
 		mDrawCommands = mCommandPool->createBuffer();
 		mDrawCommands->SetDebugName("VulkanFrameBuffer.mDrawCommands");
 		mDrawCommands->begin();
 	}
 	return mDrawCommands.get();
+}
+
+std::unique_ptr<VulkanCommandBuffer> VkCommandBufferManager::CreateUnmanagedCommands() {
+	std::unique_ptr<VulkanCommandBuffer> cmds = mCommandPool->createBuffer();
+	cmds->SetDebugName("VulkanFrameBuffer.arbitraryCommands");
+	cmds->begin();
+
+	return cmds;
 }
 
 void VkCommandBufferManager::BeginFrame()
@@ -98,7 +111,7 @@ void VkCommandBufferManager::BeginFrame()
 	}
 }
 
-void VkCommandBufferManager::FlushCommands(VulkanCommandBuffer** commands, size_t count, bool finish, bool lastsubmit)
+void VkCommandBufferManager::FlushCommands(VulkanCommandBuffer** commands, size_t count, VkQueue *queue, bool finish, bool lastsubmit)
 {
 	int currentIndex = mNextSubmit % maxConcurrentSubmitCount;
 
@@ -125,7 +138,7 @@ void VkCommandBufferManager::FlushCommands(VulkanCommandBuffer** commands, size_
 	if (!lastsubmit)
 		submit.AddSignal(mSubmitSemaphore[currentIndex].get());
 
-	submit.Execute(fb->device, fb->device->graphicsQueue, mSubmitFence[currentIndex].get());
+	submit.Execute(fb->device, *queue, mSubmitFence[currentIndex].get());
 	mNextSubmit++;
 }
 
@@ -153,11 +166,13 @@ void VkCommandBufferManager::FlushCommands(bool finish, bool lastsubmit, bool up
 			DrawDeleteList->Add(std::move(mDrawCommands));
 		}
 
-		FlushCommands(commands, count, finish, lastsubmit);
+		FlushCommands(commands, count, fbQueue, finish, lastsubmit);
 
 		current_rendered_commandbuffers += (int)count;
 	}
 }
+
+extern glcycle_t GPUWait, FPSWait;
 
 void VkCommandBufferManager::WaitForCommands(bool finish, bool uploadOnly)
 {
@@ -169,13 +184,18 @@ void VkCommandBufferManager::WaitForCommands(bool finish, bool uploadOnly)
 		presentImageIndex = swapChain->AcquireImage(fb->GetClientWidth(), fb->GetClientHeight(), fb->GetVSync(), mSwapChainImageAvailableSemaphore.get());
 		if (presentImageIndex != 0xffffffff)
 			fb->GetPostprocess()->DrawPresentTexture(fb->mOutputLetterbox, true, false);
+
 	}
 
 	FlushCommands(finish, true, uploadOnly);
 
 	if (finish)
 	{
+		/* @Cockatrice - Moving the FPS limiter to after the GPU functions, since it doesn't seem to account for a slow GPU process
+		FPSWait.Reset();
+		FPSWait.Clock();
 		fb->FPSLimit();
+		FPSWait.Unclock();*/
 
 		if (presentImageIndex != 0xffffffff)
 			swapChain->QueuePresent(presentImageIndex, mRenderFinishedSemaphore.get());
@@ -185,8 +205,23 @@ void VkCommandBufferManager::WaitForCommands(bool finish, bool uploadOnly)
 
 	if (numWaitFences > 0)
 	{
-		vkWaitForFences(fb->device->device, numWaitFences, mSubmitWaitFences, VK_TRUE, std::numeric_limits<uint64_t>::max());
+		if (finish) {
+			GPUWait.Reset();
+			GPUWait.Clock();
+		}
+		auto res = vkWaitForFences(fb->device->device, numWaitFences, mSubmitWaitFences, VK_TRUE, std::numeric_limits<uint64_t>::max());
 		vkResetFences(fb->device->device, numWaitFences, mSubmitWaitFences);
+
+		if (finish) {
+			GPUWait.Unclock();
+		}
+	}
+
+	if (finish) {
+		FPSWait.Reset();
+		FPSWait.Clock();
+		fb->FPSLimit();
+		FPSWait.Unclock();
 	}
 
 	DeleteFrameObjects(uploadOnly);

@@ -65,6 +65,15 @@ CUSTOM_CVAR(Int, vk_device, 0, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCAL
 	Printf("This won't take effect until " GAMENAME " is restarted.\n");
 }
 
+CUSTOM_CVAR(Int, vk_max_transfer_threads, 2, CVAR_ARCHIVE | CVAR_GLOBALCONFIG | CVAR_NOINITCALL)
+{
+	if (self < 0) self = 0;
+	else if (self > 4) self = 4;
+
+	Printf("This won't take effect until " GAMENAME " is restarted.\n");
+}
+
+
 CCMD(vk_listdevices)
 {
 	for (size_t i = 0; i < SupportedDevices.size(); i++)
@@ -134,35 +143,129 @@ void VulkanDevice::SelectPhysicalDevice()
 		VulkanCompatibleDevice dev;
 		dev.device = &AvailableDevices[idx];
 
-		// Figure out what can present
-		for (int i = 0; i < (int)info.QueueFamilies.size(); i++)
-		{
-			VkBool32 presentSupport = false;
-			VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(info.Device, i, surface, &presentSupport);
-			if (result == VK_SUCCESS && info.QueueFamilies[i].queueCount > 0 && presentSupport)
-			{
-				dev.presentFamily = i;
-				break;
-			}
-		}
-
-		// The vulkan spec states that graphics and compute queues can always do transfer.
-		// Furthermore the spec states that graphics queues always can do compute.
-		// Last, the spec makes it OPTIONAL whether the VK_QUEUE_TRANSFER_BIT is set for such queues, but they MUST support transfer.
-		//
-		// In short: pick the first graphics queue family for everything.
-		for (int i = 0; i < (int)info.QueueFamilies.size(); i++)
-		{
+		// @Cockatrice - The old way was broken, using the first graphics queue was a huge problem and only worked because
+		// the code that actually requested the queue only ever actually found 1 and reused it for both Graphics and Present
+		// So, lets Find our graphics queue family first, this should be the easiest one
+		for (int i = 0; i < (int)info.QueueFamilies.size(); i++) {
 			const auto &queueFamily = info.QueueFamilies[i];
-			if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
-			{
+			if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
 				dev.graphicsFamily = i;
 				dev.graphicsTimeQueries = queueFamily.timestampValidBits != 0;
 				break;
 			}
 		}
 
-		if (dev.graphicsFamily != -1 && dev.presentFamily != -1)
+		// Find a transfer queue family. This can be a graphics family if necessary, but make sure there is enough
+		// room. AMD cards do not seem to allow blit ops on a Transfer only queue, to the point where most drivers
+		// seem to freeze the entire operating system if you try. We will first try a unique graphics family queue.
+		// If we can't get a graphics family queue, mipmaps need to be generated in the main thread which is obviously
+		// a bit slower, so avoid this when possible.
+		for (int i = 0; i < (int)info.QueueFamilies.size(); i++) {
+			const auto &queueFamily = info.QueueFamilies[i];
+			if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+				// Make sure the family has room for another queue
+				if (i == dev.graphicsFamily && queueFamily.queueCount < 2) {
+					continue;
+				}
+
+				// We have LOTS of misalignments between our textures, so we NEED a granularity of 1.
+				if (queueFamily.minImageTransferGranularity.width > 1 || queueFamily.minImageTransferGranularity.depth > 1) {
+					continue;
+				}
+
+				// We are lucky! We found a graphics family for our upload queue, and we can generate mipmaps in
+				// the background thread
+				dev.uploadFamily = i;
+				dev.uploadFamilySupportsGraphics = true;
+				break;
+			}
+		}
+
+		// If we didn't find one, loosen the restrictions
+		if(dev.uploadFamily == -1) {
+			for (int i = 0; i < (int)info.QueueFamilies.size(); i++) {
+				const auto &queueFamily = info.QueueFamilies[i];
+
+				if (i == dev.graphicsFamily && queueFamily.queueCount < 2) {
+					continue;
+				}
+
+				// We have LOTS of misalignments between our textures, so we NEED a granularity of 1.
+				if (queueFamily.minImageTransferGranularity.width > 1 || queueFamily.minImageTransferGranularity.depth > 1) {
+					continue;
+				}
+
+				// Spec states all families must support Transfer, so we should be able to grab any one that passes the other criteria
+				if (queueFamily.queueCount > 0) {
+					dev.uploadFamily = i;
+					dev.uploadFamilySupportsGraphics = false;
+					break;
+				}
+			}
+		}
+
+		// Now find a Present family. In the end the Present and Graphics queue CAN be the same queue, but we need to treat that specially
+		// The original Vulkan implementation accidentally always ended up with the same queue for graphics and present anyways 
+		for (int i = 0; i < (int)info.QueueFamilies.size(); i++) {
+			const auto &queueFamily = info.QueueFamilies[i];
+			VkBool32 presentSupport = false;
+			VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(info.Device, i, surface, &presentSupport);
+			if (result == VK_SUCCESS && queueFamily.queueCount > 0 && presentSupport) {
+				// Make sure there is enough room in this queue
+				uint32_t requiredCount = 1;
+				if (i == dev.graphicsFamily) requiredCount++;
+				if (i == dev.uploadFamily) requiredCount++;
+				if (requiredCount > queueFamily.queueCount) continue;
+
+				dev.presentFamily = i;
+				break;
+			}
+		}
+
+		// If we didn't find a present family with enough room, let's make sure the graphics queue family supports it
+		if (dev.presentFamily < 0 && dev.graphicsFamily >= 0) {
+			VkBool32 presentSupport = false;
+			VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(info.Device, dev.graphicsFamily, surface, &presentSupport);
+			if (result == VK_SUCCESS && presentSupport) {
+				dev.presentFamily = -2;
+			}
+		}
+
+
+		// OLD CODE
+		/*for (int i = 0; i < (int)info.QueueFamilies.size(); i++)
+		{
+			const auto &queueFamily = info.QueueFamilies[i];
+			if (queueFamily.queueCount > 0 && ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) || !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)))
+			{
+				dev.uploadFamily = i;
+				break;
+			}
+		}*/
+
+		// The vulkan spec states that graphics and compute queues can always do transfer.
+		// Furthermore the spec states that graphics queues always can do compute.
+		// Last, the spec makes it OPTIONAL whether the VK_QUEUE_TRANSFER_BIT is set for such queues, but they MUST support transfer.
+		//
+		// In short: pick the first graphics queue family for everything.
+		/*for (int i = 0; i < (int)info.QueueFamilies.size(); i++)
+		{
+			const auto &queueFamily = info.QueueFamilies[i];
+			if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+			{
+				dev.graphicsFamily = i;
+				dev.graphicsTimeQueries = queueFamily.timestampValidBits != 0;
+				if (dev.uploadFamily < 0) {
+					dev.uploadFamily = i;
+				}
+				if (dev.presentFamily < 0) {
+					dev.uploadFamily = i;
+				}
+				break;
+			}
+		}*/
+
+		if (dev.graphicsFamily != -1 && dev.uploadFamily != -1 && dev.presentFamily != -1)
 		{
 			SupportedDevices.push_back(dev);
 		}
@@ -176,8 +279,8 @@ void VulkanDevice::SelectPhysicalDevice()
 
 		// Sort by GPU type first. This will ensure the "best" device is most likely to map to vk_device 0
 		static const int typeSort[] = { 4, 1, 0, 2, 3 };
-		int sortA = a.device->Properties.deviceType < 5 ? typeSort[a.device->Properties.deviceType] : (int)a.device->Properties.deviceType;
-		int sortB = b.device->Properties.deviceType < 5 ? typeSort[b.device->Properties.deviceType] : (int)b.device->Properties.deviceType;
+		int sortA = a.device->Properties.deviceType < 5 ? typeSort[(int)a.device->Properties.deviceType] : (int)a.device->Properties.deviceType;
+		int sortB = b.device->Properties.deviceType < 5 ? typeSort[(int)b.device->Properties.deviceType] : (int)b.device->Properties.deviceType;
 		if (sortA != sortB)
 			return sortA < sortB;
 
@@ -189,7 +292,7 @@ void VulkanDevice::SelectPhysicalDevice()
 	size_t selected = vk_device;
 	if (selected >= SupportedDevices.size())
 		selected = 0;
-
+		
 	// Enable optional extensions we are interested in, if they are available on this device
 	for (const auto &ext : SupportedDevices[selected].device->Extensions)
 	{
@@ -205,7 +308,13 @@ void VulkanDevice::SelectPhysicalDevice()
 	PhysicalDevice = *SupportedDevices[selected].device;
 	graphicsFamily = SupportedDevices[selected].graphicsFamily;
 	presentFamily = SupportedDevices[selected].presentFamily;
+	uploadFamily = SupportedDevices[selected].uploadFamily;
 	graphicsTimeQueries = SupportedDevices[selected].graphicsTimeQueries;
+	uploadFamilySupportsGraphics = SupportedDevices[selected].uploadFamilySupportsGraphics;
+
+	// Test to see if we can fit more upload queues
+	int rqt = (uploadFamily == graphicsFamily ? 1 : 0) + (presentFamily == uploadFamily ? 1 : 0);
+	uploadQueuesSupported = SupportedDevices[selected].device->QueueFamilies[uploadFamily].queueCount - rqt;
 }
 
 bool VulkanDevice::SupportsDeviceExtension(const char *ext) const
@@ -229,23 +338,45 @@ void VulkanDevice::CreateAllocator()
 		VulkanError("Unable to create allocator");
 }
 
+
+static int CreateOrModifyQueueInfo(std::vector<VkDeviceQueueCreateInfo> &infos, uint32_t family, float *priority) {
+	for (VkDeviceQueueCreateInfo &info : infos) {
+		if (info.queueFamilyIndex == family) {
+			info.queueCount++;
+			return info.queueCount - 1;
+		}
+	}
+
+	VkDeviceQueueCreateInfo queueCreateInfo = {};
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.queueFamilyIndex = family;
+	queueCreateInfo.queueCount = 1;
+	queueCreateInfo.pQueuePriorities = priority;
+	infos.push_back(queueCreateInfo);
+
+	return 0;
+}
+
+
 void VulkanDevice::CreateDevice()
 {
-	float queuePriority = 1.0f;
+	// TODO: Lower queue priority for upload queues
+	float queuePriority[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 
 	std::set<int> neededFamilies;
 	neededFamilies.insert(graphicsFamily);
-	neededFamilies.insert(presentFamily);
+	if(presentFamily != -2) neededFamilies.insert(presentFamily);
+	neededFamilies.insert(uploadFamily);
 
-	for (int index : neededFamilies)
-	{
-		VkDeviceQueueCreateInfo queueCreateInfo = {};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = index;
-		queueCreateInfo.queueCount = 1;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
-		queueCreateInfos.push_back(queueCreateInfo);
+	int graphicsFamilySlot = CreateOrModifyQueueInfo(queueCreateInfos, graphicsFamily, queuePriority);
+	int presentFamilySlot = presentFamily == -2 ? -1 : CreateOrModifyQueueInfo(queueCreateInfos, presentFamily, queuePriority);
+	
+	// Request as many upload queues as desired and supported. Minimum 1
+	std::vector<int> uploadFamilySlots;
+	int numUploadQueues = vk_max_transfer_threads > 0 ? vk_max_transfer_threads : 2;
+	for (int x = 0; x < numUploadQueues && x < uploadQueuesSupported; x++) {
+		uploadFamilySlots.push_back(CreateOrModifyQueueInfo(queueCreateInfos, uploadFamily, queuePriority));
 	}
 
 	VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
@@ -295,8 +426,29 @@ void VulkanDevice::CreateDevice()
 
 	volkLoadDevice(device);
 
-	vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);
+	vkGetDeviceQueue(device, graphicsFamily, graphicsFamilySlot, &graphicsQueue);
+	vkGetDeviceQueue(device, presentFamily, presentFamilySlot != -1 ? presentFamilySlot : graphicsFamilySlot, &presentQueue);
+	
+	// Upload queues
+	VulkanUploadSlot slot = { VK_NULL_HANDLE, uploadFamily, uploadFamilySlots[0], uploadFamilySupportsGraphics };
+	vkGetDeviceQueue(device, uploadFamily, uploadFamilySlots[0], &slot.queue);
+	uploadQueues.push_back(slot);
+
+	// Push more upload queues if supported
+	for(int x = 1; x < (int)uploadFamilySlots.size(); x++) {
+		VulkanUploadSlot slot = { VK_NULL_HANDLE, uploadFamily, uploadFamilySlots[x], uploadFamilySupportsGraphics };
+		vkGetDeviceQueue(device, uploadFamily, uploadFamilySlots[x], &slot.queue);
+		uploadQueues.push_back(slot);
+
+		if (slot.queue == VK_NULL_HANDLE) {
+			FString msg;
+			msg.Format("Vulkan Error: Failed to create background transfer queue %d!\nCheck vk_max_transfer_threads?", x);
+			throw CVulkanError(msg.GetChars());
+		}
+	}
+
+	Printf(TEXTCOLOR_WHITE "VK Graphics Queue: %p\nVK Present Queue: %p\n", graphicsQueue, presentQueue);
+	for (int x = 0; x < (int)uploadQueues.size(); x++) Printf(TEXTCOLOR_WHITE "VK Upload Queue %d: %p\n", x, uploadQueues[x].queue);
 }
 
 void VulkanDevice::CreateSurface()
@@ -314,7 +466,13 @@ void VulkanDevice::CreateInstance()
 	EnabledExtensions = GetPlatformExtensions();
 
 	std::string debugLayer = "VK_LAYER_KHRONOS_validation";
+// @Cockatrice - Force validation layers in debug build
+#ifdef NDEBUG
 	bool wantDebugLayer = vk_debug;
+#else
+	bool wantDebugLayer = true;
+#endif
+
 	bool debugLayerFound = false;
 	if (wantDebugLayer)
 	{
@@ -328,6 +486,10 @@ void VulkanDevice::CreateInstance()
 				break;
 			}
 		}
+	}
+
+	if(!debugLayerFound && wantDebugLayer) {
+		Printf(TEXTCOLOR_RED "Vulkan Error: Debug layers were requested but not available!");
 	}
 
 	// Enable optional instance extensions we are interested in
@@ -348,7 +510,7 @@ void VulkanDevice::CreateInstance()
 	{
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "GZDoom";
+		appInfo.pApplicationName = "Selaco";
 		appInfo.applicationVersion = VK_MAKE_VERSION(VER_MAJOR, VER_MINOR, VER_REVISION);
 		appInfo.pEngineName = "GZDoom";
 		appInfo.engineVersion = VK_MAKE_VERSION(ENG_MAJOR, ENG_MINOR, ENG_REVISION);
