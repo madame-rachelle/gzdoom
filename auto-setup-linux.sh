@@ -69,7 +69,7 @@ if [ ! -d "zmusic" ]; then
 	git clone https://github.com/zdoom/zmusic
 fi
 if [ -d "zmusic" ]; then
-	git -C ./zmusic checkout 1.1.12
+	git -C ./zmusic checkout 1.1.14
 fi
 
 if [ ! -d "zmusic/build" ]; then
@@ -82,8 +82,10 @@ fi
 cmake -S ./zmusic -B ./zmusic/build \
 	-DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake \
 	-DVCPKG_LIBSNDFILE=1 \
-	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
-	-DVCPKG_INSTALLLED_DIR=../vcpkg_installed/
+	-DCMAKE_BUILD_TYPE=Release \
+	-DVCPKG_INSTALLLED_DIR=../vcpkg_installed/ \
+	-DBUILD_SHARED_LIBS=Off \
+	-DVCPKG_LIBRARY_LINKAGE=static
 pushd ./zmusic/build
 make -j $(nproc)
 popd
@@ -91,7 +93,12 @@ popd
 cmake -S .. -B . \
 	-DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake \
 	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
-	-DVCPKG_INSTALLLED_DIR=./vcpkg_installed/
+	-DVCPKG_INSTALLLED_DIR=./vcpkg_installed/ \
+	-DVCPKG_LIBRARY_LINKAGE=static \
+	-DVCPKG_CMAKE_SYSTEM_NAME=Linux \
+	-DVCPKG_BUILD_TYPE=release \
+	-DVCPKG_TARGET_ARCHITECTURE=x64
+
 make -j $(nproc); rc=$?
 
 # -- If successful, show the build
