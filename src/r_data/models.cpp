@@ -711,6 +711,8 @@ void ParseModelDefLump(int Lump)
 			initArray(smf.animationIDs, smf.modelsAmount, -1);
 			initArray(smf.modelframes, smf.modelsAmount, 0);
 
+			const FTextureID IDerrortex = TexMan.CheckForTexture("-noflat-", ETextureType::Any);
+
 			sc.RestorePos(scPos);
 			sc.MustGetStringName("{");
 			while (!sc.CheckString("}"))
@@ -896,15 +898,16 @@ void ParseModelDefLump(int Lump)
 					FixPathSeperator(sc.String);
 					if (sc.Compare(""))
 					{
-						smf.skinIDs[index]=FNullTextureID();
+						smf.skinIDs[index] = FNullTextureID();
 					}
 					else
 					{
 						smf.skinIDs[index] = LoadSkin(path.GetChars(), sc.String);
 						if (!smf.skinIDs[index].isValid())
 						{
-							Printf("Skin '%s' not found in '%s'\n",
+							sc.ScriptMessage("Skin '%s' not found in '%s'\n",
 								sc.String, type->TypeName.GetChars());
+							smf.skinIDs[index] = IDerrortex;
 						}
 					}
 				}
@@ -937,8 +940,9 @@ void ParseModelDefLump(int Lump)
 						smf.surfaceskinIDs[ssIndex] = LoadSkin(path.GetChars(), sc.String);
 						if (!smf.surfaceskinIDs[ssIndex].isValid())
 						{
-							Printf("Surface Skin '%s' not found in '%s'\n",
+							sc.ScriptMessage("Surface Skin '%s' not found in '%s'\n",
 								sc.String, type->TypeName.GetChars());
+							smf.surfaceskinIDs[index] = IDerrortex;
 						}
 					}
 				}
